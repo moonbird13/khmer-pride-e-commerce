@@ -1,14 +1,28 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-const featuredProducts = [
-  { name: 'Khmer Silk Scarf', price: '$24', description: 'Handwoven silk scarf inspired by Cambodian heritage.' },
-  { name: 'Bamboo Toothbrush Set', price: '$12', description: 'Eco-friendly bamboo toothbrushes crafted in Cambodia.' },
-  { name: 'Palm Sugar Syrup', price: '$18', description: 'Naturally sourced palm sugar syrup from local farms.' },
-];
-
 export default function HomePage() {
-  const { user, logout } = useAuth();
+  const { user, logout, api } = useAuth();
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const loadCatalog = async () => {
+      try {
+        const [productsResponse, categoriesResponse] = await Promise.all([
+          api.get('/products'),
+          api.get('/categories'),
+        ]);
+        setProducts(productsResponse.data);
+        setCategories(categoriesResponse.data);
+      } catch (error) {
+        console.error('Catalog load failed', error);
+      }
+    };
+
+    loadCatalog();
+  }, [api]);
 
   return (
     <div className="page-shell">
@@ -19,7 +33,11 @@ export default function HomePage() {
           <p className="hero-copy">Buy directly from a trusted marketplace that celebrates Cambodian artistry, wellness, and everyday essentials.</p>
           <div className="hero-actions">
             {user ? (
-              <button className="primary-btn" onClick={logout}>Logout</button>
+              <>
+                <Link className="primary-btn" to="/cart">View cart</Link>
+                <Link className="secondary-btn" to="/orders">My orders</Link>
+                <button className="secondary-btn" onClick={logout}>Logout</button>
+              </>
             ) : (
               <>
                 <Link className="primary-btn" to="/login">Login</Link>
@@ -31,13 +49,33 @@ export default function HomePage() {
       </header>
 
       <section className="content-section">
+        <h2>Categories</h2>
+        <div className="product-grid">
+          {categories.map((category) => (
+            <article key={category.id} className="product-card">
+              <h3>{category.name}</h3>
+              <p>{category.description}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="content-section">
         <h2>Featured products</h2>
         <div className="product-grid">
-          {featuredProducts.map((product) => (
-            <article key={product.name} className="product-card">
+          {products.map((product) => (
+            <article key={product.id} className="product-card">
               <h3>{product.name}</h3>
               <p>{product.description}</p>
-              <strong>{product.price}</strong>
+              <strong>${product.price}</strong>
+              {user ? (
+                <button className="primary-btn" onClick={async () => {
+                  await api.post('/cart', { productId: product.id, quantity: 1 });
+                  alert(`${product.name} added to cart`);
+                }}>Add to cart</button>
+              ) : (
+                <Link className="secondary-btn" to="/login">Login to buy</Link>
+              )}
             </article>
           ))}
         </div>
