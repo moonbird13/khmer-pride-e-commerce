@@ -1,4 +1,4 @@
-const db = require('./models');
+import db from './models/index.js';
 
 async function testModels() {
     try {

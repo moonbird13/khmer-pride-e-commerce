@@ -1,4 +1,4 @@
-const db = require('./models');
+import db from './models/index.js';
 
 const {
     User,
@@ -59,6 +59,21 @@ async function testAssociation() {
         console.log("✅ User -> Favorite");
 
 
+        // user -> refreshToken
+        await User.findOne({
+            include: db.RefreshToken
+        });
+        console.log("✅ User -> RefreshToken");
+        // user -> emailVerificationToken
+        await User.findOne({
+            include: db.EmailVerificationToken
+        });
+        console.log("✅ User -> EmailVerificationToken");
+        // user -> passwordResetToken
+        await User.findOne({
+            include: db.PasswordResetToken
+        });
+        console.log("✅ User -> PasswordResetToken");
         // Category -> Product
         await Category.findOne({
             include: Product
@@ -140,6 +155,7 @@ async function testAssociation() {
         await Order.findOne({
             include: Delivery
         });
+
         console.log("✅ Order -> Delivery");
 
 

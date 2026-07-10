@@ -1,5 +1,6 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const sequelize = new Sequelize(
   process.env.DB_NAME, 
@@ -18,4 +19,4 @@ const sequelize = new Sequelize(
   },
 });
 
-module.exports = sequelize;
+export default sequelize;

@@ -1,5 +1,5 @@
-const express = require('express');
-const { authenticate, authorizeRoles } = require('../middleware/auth');
+import express from 'express';
+import { authenticate, authorizeRoles } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -37,4 +37,4 @@ router.post('/', authenticate, authorizeRoles('admin', 'staff'), (req, res) => {
   res.status(201).json(product);
 });
 
-module.exports = router;
+export default router;

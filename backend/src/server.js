@@ -1,13 +1,14 @@
-const express = require('express');
-const cors = require('cors');
-const cookieParser = require('cookie-parser');
-const dotenv = require('dotenv');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-const sequelize = require('./config/database');
-const User = require('./models/User');
-const authRoutes = require('./routes/authRoutes');
-const productRoutes = require('./routes/productRoutes');
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import dotenv from 'dotenv';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
+import sequelize from './config/database.js';
+import User from './models/User.js';
+import authRoutes from './routes/authRoutes.js';
+import productCategoryRoutes from './routes/productCategoryRoutes.js';
+import cartOrderRoutes from './routes/cartOrderRoutes.js';
 
 dotenv.config();
 
@@ -17,7 +18,17 @@ const PORT = process.env.PORT || 5000;
 global.dbAvailable = true;
 global.memoryUsers = [];
 
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -39,7 +50,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
+app.use('/api', productCategoryRoutes);
+app.use('/api', cartOrderRoutes);
 
 const startServer = async () => {
   try {
@@ -50,7 +62,7 @@ const startServer = async () => {
   } catch (error) {
     global.dbAvailable = false;
     console.warn('MySQL is unavailable. Falling back to an in-memory store for local development.');
-    app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT} in demo mode`));
+    app.listen(PORT, () => console.log(`Khmer Pride backend running on port http://localhost:${PORT} in demo mode`));
   }
 };
 

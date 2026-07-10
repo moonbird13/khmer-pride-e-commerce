@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const User = sequelize.define('User', {
   userId: {
@@ -54,22 +54,6 @@ const User = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  verificationToken: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  refreshToken: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  passwordResetToken: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  passwordResetExpires: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
   createAt: {
     type: DataTypes.DATEONLY,
     defaultValue: DataTypes.NOW,
@@ -80,4 +64,4 @@ const User = sequelize.define('User', {
   timestamps: false,
 });
 
-module.exports = User;
+export default User;

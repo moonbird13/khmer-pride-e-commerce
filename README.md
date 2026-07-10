@@ -32,5 +32,6 @@ Khmer Pride is a full-stack marketplace for authentic Cambodian products. The pr
 - Email verification flow
 - Forgot/reset/change password endpoints
 - Role-based authorization middleware
+- Product and category module
 - Swagger docs at /api-docs
 - Demo-mode fallback when MySQL is unavailable

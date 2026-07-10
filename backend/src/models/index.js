@@ -1,19 +1,23 @@
-const sequelize = require('../config/database');
+import sequelize from '../config/database.js';
 
-const User = require('./User');
-const Address = require('./Address');
-const Category = require('./Category');
-const Product = require('./Product');
-const Cart = require('./Cart');
-const Cart_Item = require('./Cart_Item');
-const Order = require('./Order');
-const Order_detail = require('./Order_detail');
-const Payment = require('./Payment');
-const Delivery = require('./Delivery');
-const Review = require('./Review');
-const Favorite = require('./Favorite');
-const Product_Image = require('./Product_Image');
-const Inventory = require('./Inventory');
+import User from './User.js';
+import Address from './Address.js';
+import Category from './Category.js';
+import Product from './Product.js';
+import Cart from './Cart.js';   
+import Cart_Item from './Cart_Item.js';
+import Order from './Order.js';
+import Order_detail from './Order_detail.js';
+import Payment from './Payment.js';
+import Delivery from './Delivery.js';
+import Review from './Review.js';
+import Favorite from './Favorite.js';
+import Product_Image from './Product_Image.js';
+import Inventory from './Inventory.js';
+import RefreshToken from './RefreshToken.js';
+import EmailVerificationToken from './EmailVerificationToken.js';
+import PasswordResetToken from './PasswordResetToken.js';
+
 
 
 const db = {
@@ -31,7 +35,10 @@ const db = {
     Review,
     Favorite,
     Product_Image,
-    Inventory
+    Inventory,
+    RefreshToken,
+    EmailVerificationToken,
+    PasswordResetToken
 };
 
 // Define associations
@@ -97,6 +104,38 @@ Favorite.belongsTo(User, {
 });
 
 
+//one User has many RefreshTokens
+User.hasMany(RefreshToken, {
+    foreignKey: 'userId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+RefreshToken.belongsTo(User, {
+    foreignKey: 'userId'
+});
+
+
+//one user has many EmailVerificationTokens
+User.hasMany(EmailVerificationToken, {
+    foreignKey: 'userId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+EmailVerificationToken.belongsTo(User, {
+    foreignKey: 'userId'
+});
+
+
+//one User has many passwordResetTokens
+User.hasMany(PasswordResetToken, {
+    foreignKey: 'userId',
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE'
+});
+
+PasswordResetToken.belongsTo(User, {
+    foreignKey: 'userId'
+});
 
 //-------------------------------------- CATEGORY RELATIONSHIPS -------------------------------
 // One Category has many Products
@@ -235,4 +274,4 @@ Delivery.belongsTo(Order, {
 });
 
 
-module.exports = db;
+export default db;

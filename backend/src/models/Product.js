@@ -1,5 +1,5 @@
-const {DataTypes} = require("sequelize");
-const sequelize = require("../config/database");
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const Product = sequelize.define("Product", {
     productId: {
@@ -32,10 +32,33 @@ const Product = sequelize.define("Product", {
         type: DataTypes.INTEGER,
         allowNull: false,
         field: "category_ID"
+    },
+    slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        field: "slug"
+    },
+    isFeatured: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "isfeatured"
+    },
+    isBestSeller: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "isbestseller"
+    },
+    isNewArrival: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: "isnewarrival"
     }
 }, {
     tableName: "Product",
     timestamps: false
 });
 
-module.exports = Product;
+export default Product;
