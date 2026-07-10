@@ -1,8 +1,9 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const { persistUser, findStoredUser } = require('../utils/storage');
-require('dotenv').config();
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
+import { persistUser, findStoredUser } from '../utils/storage.js';
+import dotenv from 'dotenv';
+dotenv.config();
 
 const generateAccessToken = (user) => jwt.sign(
   { id: user.id, email: user.email, role: user.role },
@@ -232,7 +233,7 @@ const changePassword = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   register,
   login,
   refresh,

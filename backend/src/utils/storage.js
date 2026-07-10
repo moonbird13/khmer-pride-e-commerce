@@ -20,4 +20,4 @@ const findStoredUser = async (email) => {
   return null;
 };
 
-module.exports = { persistUser, findStoredUser };
+export { persistUser, findStoredUser };
