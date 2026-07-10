@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Button from '../components/Button';
+import CartItem from '../components/CartItem';
+import Hero from '../components/Hero';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function CartPage() {
@@ -46,26 +49,34 @@ export default function CartPage() {
 
   return (
     <div className="page-shell">
-      <h1>Your cart</h1>
-      <p>Review your selections and complete your Khmer Pride order.</p>
+      <Hero
+        eyebrow="Cart"
+        title="Your cart"
+        description="Review your selections and complete your Khmer Pride order."
+      />
       {message ? <div className="error-box">{message}</div> : null}
       {cart.items.length === 0 ? (
         <div className="product-card">
           <p>Your cart is empty.</p>
-          <Link className="primary-btn" to="/">Continue shopping</Link>
+          <Button to="/">Continue shopping</Button>
         </div>
       ) : (
         <div className="product-card">
-          <ul>
+          <ul className="summary-list">
             {cart.items.map((item) => (
-              <li key={item.productId}>
-                Product {item.productId} × {item.quantity}
-              </li>
+              <CartItem key={item.productId} item={item} />
             ))}
           </ul>
-          <button className="primary-btn" onClick={handleCheckout} disabled={loading}>
-            {loading ? 'Placing order...' : 'Checkout'}
-          </button>
+          <div className="checkout-total">
+            <span>Total</span>
+            <strong>${cart.items.reduce((sum, item) => sum + item.quantity * 20, 0).toFixed(2)}</strong>
+          </div>
+          <div className="card-actions">
+            <Button onClick={handleCheckout} disabled={loading}>
+              {loading ? 'Placing order...' : 'Checkout'}
+            </Button>
+            <Button to="/" variant="secondary">Continue shopping</Button>
+          </div>
         </div>
       )}
     </div>

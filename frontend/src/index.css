@@ -15,21 +15,41 @@ body { margin: 0; background: linear-gradient(135deg, #fff7eb 0%, #fffaf4 100%);
 #root { min-height: 100vh; }
 a { text-decoration: none; }
 
-.page-shell { max-width: 1140px; margin: 0 auto; padding: 32px 20px 64px; }
+.app-shell { min-height: 100vh; display: flex; flex-direction: column; }
+.page-shell { max-width: 1140px; margin: 0 auto; padding: 32px 20px 64px; width: 100%; }
+.site-navbar { max-width: 1140px; margin: 0 auto; width: 100%; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.navbar-brand { font-weight: 800; font-size: 1.15rem; color: #2f241d; }
+.navbar-links, .navbar-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.navbar-link { color: #5f4f3a; font-weight: 600; }
+.site-footer { margin-top: auto; padding: 20px; text-align: center; color: #8c6d4c; border-top: 1px solid #f1e4d4; }
 .hero-section { padding: 48px 0 24px; }
 .eyebrow { text-transform: uppercase; letter-spacing: 0.25em; font-size: 0.8rem; color: #be4b13; font-weight: 700; }
-.hero-section h1 { font-size: 3rem; margin: 8px 0 16px; color: #2f241d; }
+.hero-section h1, .page-header h1 { font-size: 3rem; margin: 8px 0 16px; color: #2f241d; }
 .hero-copy { max-width: 680px; font-size: 1.05rem; color: #5f4f3a; }
-.hero-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
-.primary-btn, .secondary-btn, .auth-card button {
-  border: none; border-radius: 999px; padding: 12px 18px; font-weight: 700; cursor: pointer;
-}
-.primary-btn, .auth-card button { background: #c96b2d; color: white; }
-.secondary-btn { background: #fdf2e7; color: #8c4311; }
+.hero-actions, .page-actions, .card-actions { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+.page-header { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 16px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.section-subtitle { text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.75rem; color: #be4b13; font-weight: 700; margin-bottom: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; border: none; border-radius: 999px; padding: 12px 18px; font-weight: 700; cursor: pointer; }
+.btn-primary { background: #c96b2d; color: white; }
+.btn-secondary { background: #fdf2e7; color: #8c4311; }
+.chip-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.chip { background: #f8efe6; color: #7b3f12; }
+.chip.active { background: #c96b2d; color: white; }
 .content-section { margin-top: 24px; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
 .product-card, .auth-card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 16px 40px rgba(0,0,0,0.06); }
 .auth-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .auth-card { width: min(420px, 100%); display: flex; flex-direction: column; gap: 12px; }
-.auth-card input { padding: 12px 14px; border: 1px solid #e4d6c7; border-radius: 12px; font-size: 1rem; }
+.auth-card input, .search-bar input, .form-field input { padding: 12px 14px; border: 1px solid #e4d6c7; border-radius: 12px; font-size: 1rem; width: 100%; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-weight: 600; color: #6b4b2d; }
 .error-box { background: #fff1f1; color: #b91c1c; border-radius: 12px; padding: 10px; }
+.summary-list { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.summary-list li { display: flex; justify-content: space-between; border-bottom: 1px solid #f0e3d5; padding-bottom: 8px; }
+.checkout-total { display: flex; justify-content: space-between; margin-top: 16px; font-size: 1.1rem; }
+.cart-item-card { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0e3d5; }
+.promo-banner, .newsletter-card { background: linear-gradient(135deg, #c96b2d 0%, #8c4311 100%); color: white; border-radius: 24px; padding: 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+.newsletter-form { display: flex; gap: 10px; flex-wrap: wrap; }
+.newsletter-form input { min-width: 260px; }
+.muted { color: #8c6d4c; font-size: 0.95rem; }

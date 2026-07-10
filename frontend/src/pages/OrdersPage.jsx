@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Hero from '../components/Hero';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function OrdersPage() {
@@ -20,7 +21,7 @@ export default function OrdersPage() {
 
   return (
     <div className="page-shell">
-      <h1>Your orders</h1>
+      <Hero eyebrow="Orders" title="Your orders" description="Track the status of your recent purchases." />
       {orders.length === 0 ? (
         <div className="product-card">
           <p>No orders yet.</p>

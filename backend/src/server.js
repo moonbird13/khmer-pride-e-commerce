@@ -62,7 +62,7 @@ const startServer = async () => {
   } catch (error) {
     global.dbAvailable = false;
     console.warn('MySQL is unavailable. Falling back to an in-memory store for local development.');
-    app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT} in demo mode`));
+    app.listen(PORT, () => console.log(`Khmer Pride backend running on port http://localhost:${PORT} in demo mode`));
   }
 };
 

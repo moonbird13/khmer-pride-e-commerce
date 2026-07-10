@@ -17,4 +17,13 @@ const listOrders = () => orders;
 
 const getOrderById = (id) => orders.find((order) => order.id === Number(id));
 
-export { createOrder, listOrders, getOrderById };
+const getOrderHistory = (userId) => orders.filter((order) => order.userId === Number(userId));
+
+const cancelOrder = (id) => {
+  const order = getOrderById(id);
+  if (!order) return null;
+  order.status = 'cancelled';
+  return order;
+};
+
+export { createOrder, listOrders, getOrderById, getOrderHistory, cancelOrder };
