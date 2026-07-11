@@ -1,11 +1,10 @@
 const categories = [];
 
-const createCategory = ({ name, description }) => {
+const createCategory = ({ categoryName, categoryStatus = 'Active' }) => {
   const category = {
-    id: Date.now(),
-    name,
-    description: description || '',
-    createdAt: new Date().toISOString(),
+    categoryId: Date.now(),
+    categoryName,
+    categoryStatus,
   };
   categories.push(category);
   return category;
@@ -13,6 +12,6 @@ const createCategory = ({ name, description }) => {
 
 const listCategories = () => categories;
 
-const getCategoryById = (id) => categories.find((category) => category.id === Number(id));
+const getCategoryById = (id) => categories.find((category) => category.categoryId === Number(id));
 
 export { createCategory, listCategories, getCategoryById };

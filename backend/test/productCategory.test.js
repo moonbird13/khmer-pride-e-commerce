@@ -4,25 +4,28 @@ import { createCategory, listCategories } from '../src/services/categoryService.
 import { createProduct, listProducts, getProductById } from '../src/services/productService.js';
 
 test('category service can create and list categories', () => {
-  const category = createCategory({ name: 'Textiles', description: 'Handmade fabrics' });
+  const category = createCategory({ categoryName: 'Textiles', categoryStatus: 'Active' });
   const categories = listCategories();
 
-  assert.equal(category.name, 'Textiles');
+  assert.equal(category.categoryName, 'Textiles');
+  assert.equal(category.categoryStatus, 'Active');
   assert.equal(categories.length > 0, true);
 });
 
 test('product service can create and retrieve products', () => {
   const product = createProduct({
-    name: 'Silk Scarf',
-    price: 24,
-    description: 'Traditional Khmer silk scarf',
+    productName: 'Silk Scarf',
+    productPrice: 24,
+    productDescription: 'Traditional Khmer silk scarf',
     categoryId: 1,
+    slug: 'silk-scarf',
   });
 
   const products = listProducts();
-  const found = getProductById(product.id);
+  const found = getProductById(product.productId);
 
-  assert.equal(product.name, 'Silk Scarf');
+  assert.equal(product.productName, 'Silk Scarf');
+  assert.equal(product.productPrice, 24);
   assert.equal(products.length > 0, true);
-  assert.equal(found?.name, 'Silk Scarf');
+  assert.equal(found?.productName, 'Silk Scarf');
 });

@@ -1,15 +1,27 @@
 const products = [];
 
-const createProduct = ({ name, price, description, categoryId, isFeatured = false }) => {
+const createProduct = ({
+  productName,
+  productPrice,
+  productDescription = '',
+  categoryId,
+  slug,
+  isFeatured = false,
+  isBestSeller = false,
+  isNewArrival = false,
+}) => {
   const product = {
-    id: Date.now(),
-    name,
-    price: Number(price),
-    description: description || '',
+    productId: Date.now(),
+    productName,
+    productPrice: Number(productPrice),
+    productDescription,
     categoryId: Number(categoryId),
+    slug,
     isFeatured: Boolean(isFeatured),
+    isBestSeller: Boolean(isBestSeller),
+    isNewArrival: Boolean(isNewArrival),
     salesCount: 0,
-    createdAt: new Date().toISOString(),
+    createAt: new Date().toISOString(),
   };
   products.push(product);
   return product;
@@ -17,14 +29,14 @@ const createProduct = ({ name, price, description, categoryId, isFeatured = fals
 
 const listProducts = () => products;
 
-const getProductById = (id) => products.find((product) => product.id === Number(id));
+const getProductById = (id) => products.find((product) => product.productId === Number(id));
 
 const searchProducts = (query) => {
   if (!query) return products;
   const normalized = query.toLowerCase();
   return products.filter((product) => (
-    product.name.toLowerCase().includes(normalized)
-    || product.description.toLowerCase().includes(normalized)
+    product.productName.toLowerCase().includes(normalized)
+    || product.productDescription.toLowerCase().includes(normalized)
   ));
 };
 
@@ -35,7 +47,7 @@ const getFeaturedProducts = () => {
 
 const getNewArrivals = () => {
   return [...products]
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
     .slice(0, 6);
 };
 
