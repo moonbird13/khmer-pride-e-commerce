@@ -6,46 +6,22 @@ import EmailVerificationToken from '../models/EmailVerificationToken.js';
 import PasswordResetToken from '../models/PasswordResetToken.js';
 import { persistUser, findStoredUser } from '../utils/storage.js';
 import dotenv from 'dotenv';
-<<<<<<< HEAD
-dotenv.config();
-
-const generateAccessToken = (user) => jwt.sign(
-  { id: user.id, email: user.email, role: user.role },
-=======
 
 dotenv.config();
 
 const generateAccessToken = (user) => jwt.sign(
   { id: user.userId ?? user.id, email: user.email, role: user.role },
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   process.env.JWT_ACCESS_SECRET,
   { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
 );
 
 const generateRefreshToken = (user) => jwt.sign(
-<<<<<<< HEAD
-  { id: user.id, email: user.email, role: user.role },
-=======
   { id: user.userId ?? user.id, email: user.email, role: user.role },
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   process.env.JWT_REFRESH_SECRET,
   { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
 );
 
 const sanitizeUser = (user) => ({
-<<<<<<< HEAD
-  id: user.id,
-  fullName: user.fullName,
-  email: user.email,
-  role: user.role,
-});
-
-const findUserByEmail = async (email) => {
-  if (global.dbAvailable === false) {
-    return findStoredUser(email);
-  }
-  return User.findOne({ where: { email } });
-=======
   id: user.userId ?? user.id,
   fullName: user.fullName,
   email: user.email,
@@ -71,17 +47,10 @@ const saveUser = async (user) => {
   }
 
   return user;
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
 };
 
 const register = async ({ fullName, email, password }) => {
   if (!fullName || !email || !password) {
-<<<<<<< HEAD
-    throw new Error('All fields are required.');
-  }
-
-  const existingUser = await findUserByEmail(email);
-=======
     throw Object.assign(new Error('All fields are required.'), { status: 400 });
   }
 
@@ -94,25 +63,12 @@ const register = async ({ fullName, email, password }) => {
   }
 
   const existingUser = await findUserByEmail(normalizedEmail);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   if (existingUser) {
     const error = new Error('Email already registered.');
     error.status = 409;
     throw error;
   }
 
-<<<<<<< HEAD
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const verificationToken = jwt.sign({ email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1d' });
-  const userDocument = {
-    id: Date.now(),
-    fullName,
-    email,
-    password: hashedPassword,
-    verificationToken,
-    role: 'customer',
-    isVerified: true,
-=======
   const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
   const verificationToken = jwt.sign({ email: normalizedEmail }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1d' });
   const userId = Date.now();
@@ -130,13 +86,6 @@ const register = async ({ fullName, email, password }) => {
   const user = global.dbAvailable === false
     ? await persistUser(userDocument)
     : await User.create({
-<<<<<<< HEAD
-        fullName,
-        email,
-        password: hashedPassword,
-        verificationToken,
-        role: 'customer',
-=======
         fullName: normalizedFullName,
         email: normalizedEmail,
         phone: null,
@@ -161,44 +110,24 @@ const register = async ({ fullName, email, password }) => {
 
 const login = async ({ email, password }) => {
   if (!email || !password) {
-<<<<<<< HEAD
-    throw new Error('Email and password are required.');
-  }
-
-  const user = await findUserByEmail(email);
-=======
     throw Object.assign(new Error('Email and password are required.'), { status: 400 });
   }
 
   const normalizedEmail = String(email).trim().toLowerCase();
   const user = await findUserByEmail(normalizedEmail);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   if (!user) {
     const error = new Error('Invalid credentials.');
     error.status = 401;
     throw error;
   }
 
-<<<<<<< HEAD
-  const isMatch = await bcrypt.compare(password, user.password);
-=======
   const isMatch = await bcrypt.compare(String(password), user.password);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   if (!isMatch) {
     const error = new Error('Invalid credentials.');
     error.status = 401;
     throw error;
   }
 
-<<<<<<< HEAD
-  if (!user.isVerified) {
-    const error = new Error('Please verify your email before logging in.');
-    error.status = 403;
-    throw error;
-  }
-
-=======
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
@@ -221,8 +150,6 @@ const login = async ({ email, password }) => {
   };
 };
 
-<<<<<<< HEAD
-=======
 const refreshAccessToken = async ({ refreshToken }) => {
   if (!refreshToken) {
     throw Object.assign(new Error('Refresh token is required.'), { status: 400 });
@@ -251,36 +178,18 @@ const refreshAccessToken = async ({ refreshToken }) => {
   };
 };
 
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
 const logout = async ({ refreshToken }) => {
   if (!refreshToken) {
     return { message: 'Logged out.' };
   }
 
-<<<<<<< HEAD
-  const payload = jwt.decode(refreshToken);
-  if (!payload?.id) {
-=======
   const payload = jwt.decode(refreshToken) || {};
   const userId = payload.id;
   if (!userId) {
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
     return { message: 'Logged out.' };
   }
 
   const user = global.dbAvailable === false
-<<<<<<< HEAD
-    ? await findStoredUser(payload.email)
-    : await User.findByPk(payload.id);
-
-  if (user) {
-    user.refreshToken = null;
-    if (global.dbAvailable === false) {
-      await persistUser(user);
-    } else {
-      await user.save();
-    }
-=======
     ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(userId))
     : await User.findByPk(userId);
 
@@ -325,29 +234,14 @@ const verifyEmail = async ({ token }) => {
 };
 
 const forgotPassword = async ({ email }) => {
-<<<<<<< HEAD
-  const user = await findUserByEmail(email);
-=======
   const normalizedEmail = String(email).trim().toLowerCase();
   const user = await findUserByEmail(normalizedEmail);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   if (!user) {
     const error = new Error('No user found with that email.');
     error.status = 404;
     throw error;
   }
 
-<<<<<<< HEAD
-  const resetToken = jwt.sign({ id: user.id, email: user.email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
-  user.passwordResetToken = resetToken;
-  user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
-
-  if (global.dbAvailable === false) {
-    await persistUser(user);
-  } else {
-    await user.save();
-  }
-=======
   const resetToken = jwt.sign({ id: user.userId ?? user.id, email: user.email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
 
   if (global.dbAvailable === false) {
@@ -394,11 +288,7 @@ const resetPassword = async ({ token, newPassword }) => {
 
 const changePassword = async ({ userId, currentPassword, newPassword }) => {
   const user = global.dbAvailable === false
-<<<<<<< HEAD
-    ? global.memoryUsers?.find((entry) => entry.id === Number(userId))
-=======
     ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(userId))
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
     : await User.findByPk(userId);
 
   if (!user) {
@@ -407,28 +297,15 @@ const changePassword = async ({ userId, currentPassword, newPassword }) => {
     throw error;
   }
 
-<<<<<<< HEAD
-  const isMatch = await bcrypt.compare(currentPassword, user.password);
-=======
   const isMatch = await bcrypt.compare(String(currentPassword), user.password);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   if (!isMatch) {
     const error = new Error('Current password is incorrect.');
     error.status = 400;
     throw error;
   }
 
-<<<<<<< HEAD
-  user.password = await bcrypt.hash(newPassword, 10);
-  if (global.dbAvailable === false) {
-    await persistUser(user);
-  } else {
-    await user.save();
-  }
-=======
   user.password = await bcrypt.hash(String(newPassword), 10);
   await saveUser(user);
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
 
   return { message: 'Password changed successfully.' };
 };
@@ -436,10 +313,7 @@ const changePassword = async ({ userId, currentPassword, newPassword }) => {
 export {
   register,
   login,
-<<<<<<< HEAD
-=======
   refreshAccessToken,
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
   logout,
   verifyEmail,
   forgotPassword,

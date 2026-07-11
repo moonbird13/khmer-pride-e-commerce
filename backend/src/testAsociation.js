@@ -1,14 +1,14 @@
 import db from './models/index.js';
 
 const {
-    User,
+    Users,
     Address,
     Category,
     Product,
     Cart,
-    Cart_Item,
-    Order,
-    Order_detail,
+    Cart_Items,
+    Orders,
+    Order_Detail,
     Payment,
     Delivery,
     Review,
@@ -25,52 +25,52 @@ async function testAssociation() {
 
 
         // User -> Address
-        await User.findOne({
+        await Users.findOne({
             include: Address
         });
         console.log("✅ User -> Address");
 
 
         // User -> Cart
-        await User.findOne({
+        await Users.findOne({
             include: Cart
         });
         console.log("✅ User -> Cart");
 
 
         // User -> Order
-        await User.findOne({
-            include: Order
+        await Users.findOne({
+            include: Orders
         });
         console.log("✅ User -> Order");
 
 
         // User -> Review
-        await User.findOne({
+        await Users.findOne({
             include: Review
         });
         console.log("✅ User -> Review");
 
 
         // User -> Favorite
-        await User.findOne({
+        await Users.findOne({
             include: Favorite
         });
         console.log("✅ User -> Favorite");
 
 
         // user -> refreshToken
-        await User.findOne({
+        await Users.findOne({
             include: db.RefreshToken
         });
         console.log("✅ User -> RefreshToken");
         // user -> emailVerificationToken
-        await User.findOne({
+        await Users.findOne({
             include: db.EmailVerificationToken
         });
         console.log("✅ User -> EmailVerificationToken");
         // user -> passwordResetToken
-        await User.findOne({
+        await Users.findOne({
             include: db.PasswordResetToken
         });
         console.log("✅ User -> PasswordResetToken");
@@ -104,14 +104,14 @@ async function testAssociation() {
 
         // Product -> Cart_Item
         await Product.findOne({
-            include: Cart_Item
+            include: Cart_Items
         });
         console.log("✅ Product -> Cart_Item");
 
 
         // Product -> Order_detail
         await Product.findOne({
-            include: Order_detail
+            include: Order_Detail
         });
         console.log("✅ Product -> Order_detail");
 
@@ -132,27 +132,27 @@ async function testAssociation() {
 
         // Cart -> Cart_Item
         await Cart.findOne({
-            include: Cart_Item
+            include: Cart_Items
         });
         console.log("✅ Cart -> Cart_Item");
 
 
         // Order -> Order_detail
-        await Order.findOne({
-            include: Order_detail
+        await Orders.findOne({
+            include: Order_Detail
         });
         console.log("✅ Order -> Order_detail");
 
 
         // Order -> Payment
-        await Order.findOne({
+        await Orders.findOne({
             include: Payment
         });
         console.log("✅ Order -> Payment");
 
 
         // Order -> Delivery
-        await Order.findOne({
+        await Orders.findOne({
             include: Delivery
         });
 

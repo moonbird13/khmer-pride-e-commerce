@@ -1,13 +1,13 @@
 import sequelize from '../config/database.js';
 
-import User from './Users.js';
+import Users from './Users.js';
 import Address from './Address.js';
 import Category from './Category.js';
 import Product from './Product.js';
 import Cart from './Cart.js';   
-import Cart_Item from './Cart_Items.js';
-import Order from './Order.js';
-import Order_detail from './Order_Detail.js';
+import Cart_Items from './Cart_Items.js';
+import Orders from './Orders.js';
+import Order_Detail from './Order_Detail.js';
 import Payment from './Payment.js';
 import Delivery from './Deliveries.js';
 import Review from './Review.js';
@@ -22,14 +22,14 @@ import PasswordResetToken from './PasswordResetToken.js';
 
 const db = {
     sequelize,
-    User,
+    Users,
     Address,
     Category,
     Product,
     Cart,
-    Cart_Item,
-    Order,
-    Order_detail,
+    Cart_Items,
+    Orders,
+    Order_Detail,
     Payment,
     Delivery,
     Review,
@@ -45,95 +45,95 @@ const db = {
 
 // ------------------------------ USER RELATIONSHIPS  ----------------------------------
 // One User has many Addresses
-User.hasMany(Address, {
+Users.hasMany(Address, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Address.belongsTo(User, {
+Address.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 // One User has one Cart
-User.hasOne(Cart, {
+Users.hasOne(Cart, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Cart.belongsTo(User, {
+Cart.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 // One User has many Orders
-User.hasMany(Order, {
+Users.hasMany(Orders, {
     foreignKey: 'userId',
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
 });
 
-Order.belongsTo(User, {
+Orders.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 // One User has many Reviews
-User.hasMany(Review, {
+Users.hasMany(Review, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Review.belongsTo(User, {
+Review.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 // One User has many Favorites
-User.hasMany(Favorite, {
+Users.hasMany(Favorite, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Favorite.belongsTo(User, {
+Favorite.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 //one User has many RefreshTokens
-User.hasMany(RefreshToken, {
+Users.hasMany(RefreshToken, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
-RefreshToken.belongsTo(User, {
+RefreshToken.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 //one user has many EmailVerificationTokens
-User.hasMany(EmailVerificationToken, {
+Users.hasMany(EmailVerificationToken, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
-EmailVerificationToken.belongsTo(User, {
+EmailVerificationToken.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
 
 //one User has many passwordResetTokens
-User.hasMany(PasswordResetToken, {
+Users.hasMany(PasswordResetToken, {
     foreignKey: 'userId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-PasswordResetToken.belongsTo(User, {
+PasswordResetToken.belongsTo(Users, {
     foreignKey: 'userId'
 });
 
@@ -176,25 +176,25 @@ Inventory.belongsTo(Product, {
 
 
 // One Product has many Cart Items
-Product.hasMany(Cart_Item, {
+Product.hasMany(Cart_Items, {
     foreignKey: 'productId',
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
 });
 
-Cart_Item.belongsTo(Product, {
+Cart_Items.belongsTo(Product, {
     foreignKey: 'productId'
 });
 
 
 // One Product has many Order Details
-Product.hasMany(Order_detail, {
+Product.hasMany(Order_Detail, {
     foreignKey: 'productId',
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
 });
 
-Order_detail.belongsTo(Product, {
+Order_Detail.belongsTo(Product, {
     foreignKey: 'productId'
 });
 
@@ -225,13 +225,13 @@ Favorite.belongsTo(Product, {
 
 //-------------------------------------- CART RELATIONSHIPS --------------------------------------
 // One Cart has many Cart Items
-Cart.hasMany(Cart_Item, {
+Cart.hasMany(Cart_Items, {
     foreignKey: 'cartId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Cart_Item.belongsTo(Cart, {
+Cart_Items.belongsTo(Cart, {
     foreignKey: 'cartId'
 });
 
@@ -239,37 +239,37 @@ Cart_Item.belongsTo(Cart, {
 
 // ----------------------------------ORDER RELATIONSHIPS -------------------------------------
 // One Order has many Order Details
-Order.hasMany(Order_detail, {
+Orders.hasMany(Order_Detail, {
     foreignKey: 'orderId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE'
 });
 
-Order_detail.belongsTo(Order, {
+Order_Detail.belongsTo(Orders, {
     foreignKey: 'orderId'
 });
 
 
 // One Order has one Payment
-Order.hasOne(Payment, {
+Orders.hasOne(Payment, {
     foreignKey: 'orderId',
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
 });
 
-Payment.belongsTo(Order, {
+Payment.belongsTo(Orders, {
     foreignKey: 'orderId'
 });
 
 
 // One Order has one Delivery
-Order.hasOne(Delivery, {
+Orders.hasOne(Delivery, {
     foreignKey: 'orderId',
     onDelete: 'RESTRICT',
     onUpdate: 'CASCADE'
 });
 
-Delivery.belongsTo(Order, {
+Delivery.belongsTo(Orders, {
     foreignKey: 'orderId'
 });
 
