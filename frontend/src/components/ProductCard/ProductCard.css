@@ -1,0 +1,37 @@
+.ui-product-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.ui-product-card__image {
+  min-height: 12rem;
+  border-radius: 1.25rem;
+  background: linear-gradient(180deg, #f5f7f6 0%, #eef3ef 100%);
+  display: grid;
+  place-items: center;
+  color: #0f5132;
+  font-weight: 700;
+}
+
+.ui-product-card__content h3 {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.ui-product-card__content p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.ui-product-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ui-product-card__actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}

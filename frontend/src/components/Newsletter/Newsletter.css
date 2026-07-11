@@ -1,0 +1,42 @@
+.ui-newsletter {
+  display: grid;
+  gap: 1.5rem;
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+}
+
+.ui-eyebrow {
+  margin: 0 0 0.75rem;
+  color: #0f5132;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.ui-newsletter h3 {
+  margin: 0 0 0.75rem;
+}
+
+.ui-newsletter p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.8;
+}
+
+.ui-newsletter__form {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.ui-newsletter__field {
+  width: 100%;
+}
+
+@media (max-width: 680px) {
+  .ui-newsletter__form {
+    grid-template-columns: 1fr;
+  }
+}

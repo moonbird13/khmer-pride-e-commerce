@@ -55,6 +55,12 @@ const Product = sequelize.define("Product", {
         allowNull: false,
         defaultValue: false,
         field: "isnewarrival"
+    },
+    salesCount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        field: "sales_count"
     }
 }, {
     tableName: "Product",

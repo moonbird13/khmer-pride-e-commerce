@@ -1,3 +1,4 @@
+
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
@@ -61,7 +62,6 @@ const Users = sequelize.define('User', {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-
   createAt: {
     type: DataTypes.DATEONLY,
     defaultValue: DataTypes.NOW,
@@ -72,4 +72,4 @@ const Users = sequelize.define('User', {
   timestamps: false,
 });
 
-export default Users;
+export default User;

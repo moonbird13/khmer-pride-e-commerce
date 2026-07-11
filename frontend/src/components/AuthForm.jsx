@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import Button from './Button';
-import Input from './Input';
+import Button from './Button/Button.jsx';
+import Input from './Input/Input.jsx';
 
 export default function AuthForm({ mode, onSubmit, loading, error }) {
   const [fullName, setFullName] = useState('');
