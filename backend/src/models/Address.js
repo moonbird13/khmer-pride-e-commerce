@@ -35,7 +35,7 @@ const Address = sequelize.define("Address", {
         field: "user_ID", 
     }
 }, {
-    tableName: "Address",
+    tableName: "Addresss",
     timestamps: false,
 });
 

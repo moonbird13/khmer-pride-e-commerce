@@ -2,7 +2,7 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-const User = sequelize.define('User', {
+const Users = sequelize.define('Users', {
   userId: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -15,25 +15,30 @@ const User = sequelize.define('User', {
     defaultValue: 'default-avatar.png',
     field: "avatar_url",
   },
+
   fullName: {
     type: DataTypes.STRING,
     allowNull: false,
     field: "username",
   },
+
   email: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
+
   phone:{
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
   },
+
   password: {
     type: DataTypes.STRING,
     allowNull: false,
   },
+
   role: {
     type: DataTypes.ENUM(
       'guest', 
@@ -42,6 +47,7 @@ const User = sequelize.define('User', {
       'admin'),
     defaultValue: 'customer',
   },
+
    userStatus: {
       type: DataTypes.ENUM(
         'Active',
@@ -51,6 +57,7 @@ const User = sequelize.define('User', {
      defaultValue: 'Active',
      field: "user_status",
   },
+
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
@@ -65,4 +72,4 @@ const User = sequelize.define('User', {
   timestamps: false,
 });
 
-export default User;
+export default Users;

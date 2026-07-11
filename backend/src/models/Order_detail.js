@@ -3,7 +3,7 @@ import sequelize from '../config/database.js';
 
 
 
-const Order_detail = sequelize.define('Order_detail', {
+const Order_Detail = sequelize.define('Order_detail', {
     orderDetailId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,    
@@ -48,8 +48,8 @@ const Order_detail = sequelize.define('Order_detail', {
         field: 'product_ID'
     }
 }, {
-    tableName: 'Order_detail',
+    tableName: 'Order_Detail',
     timestamps: false
 });
 
-export default Order_detail;
+export default Order_Detail;

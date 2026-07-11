@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
 
-const EmailVerificationToken = sequelize.define('EmailVerificationToken', {
+const Email_Verification_Tokens = sequelize.define('Email_Verification_Tokens', {
 
     verificationTokenId: {
         type: DataTypes.INTEGER,
@@ -49,4 +49,4 @@ const EmailVerificationToken = sequelize.define('EmailVerificationToken', {
 });
 
 
-export default EmailVerificationToken;
+export default Email_Verification_Tokens;
