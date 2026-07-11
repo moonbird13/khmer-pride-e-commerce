@@ -26,8 +26,9 @@ const User = sequelize.define('User', {
   },
   phone:{
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
+    defaultValue: null,
   },
   password: {
     type: DataTypes.STRING,
@@ -53,6 +54,26 @@ const User = sequelize.define('User', {
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
+  },
+  verificationToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'verification_token',
+  },
+  refreshToken: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    field: 'refresh_token',
+  },
+  passwordResetToken: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    field: 'password_reset_token',
+  },
+  passwordResetExpires: {
+    type: DataTypes.DATE,
+    allowNull: true,
+    field: 'password_reset_expires',
   },
   createAt: {
     type: DataTypes.DATEONLY,
