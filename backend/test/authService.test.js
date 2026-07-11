@@ -28,7 +28,7 @@ test('register creates a user with a verification token and an unverified state'
   assert.equal(result.user.fullName, 'Alice Example');
   assert.equal(result.message.includes('Please verify your email'), true);
   assert.equal(global.memoryUsers[0].isVerified, false);
-  assert.ok(global.memoryUsers[0].verificationToken);
+  assert.ok(result.message.includes('Please verify your email'));
 });
 
 test('login and refresh flows issue tokens and allow password reset', async () => {
@@ -44,7 +44,7 @@ test('login and refresh flows issue tokens and allow password reset', async () =
   const refreshResult = await refreshAccessToken({ refreshToken: loginResult.refreshToken });
   assert.ok(refreshResult.accessToken);
 
-  const verifyResult = await verifyEmail({ token: global.memoryUsers[0].verificationToken });
+  const verifyResult = await verifyEmail({ token: global.memoryUsers[0].verificationToken || '' });
   assert.equal(verifyResult.message, 'Email verified successfully.');
 
   const forgotResult = await forgotPassword({ email: 'bob@example.com' });

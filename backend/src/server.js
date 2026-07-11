@@ -108,7 +108,7 @@ const startServer = async () => {
   try {
     await db.sequelize.authenticate();
     global.dbAvailable = true;
-    await db.sequelize.sync({ alter: true });
+    await db.sequelize.sync();
     await seedInitialData();
     app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT}`));
   } catch (error) {

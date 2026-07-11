@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import RefreshToken from '../models/RefreshToken.js';
+import EmailVerificationToken from '../models/EmailVerificationToken.js';
+import PasswordResetToken from '../models/PasswordResetToken.js';
 import { persistUser, findStoredUser } from '../utils/storage.js';
 import dotenv from 'dotenv';
 
@@ -76,12 +79,8 @@ const register = async ({ fullName, email, password }) => {
     email: normalizedEmail,
     phone: null,
     password: hashedPassword,
-    verificationToken,
     role: 'customer',
     isVerified: false,
-    refreshToken: null,
-    passwordResetToken: null,
-    passwordResetExpires: null,
   };
 
   const user = global.dbAvailable === false
@@ -91,10 +90,17 @@ const register = async ({ fullName, email, password }) => {
         email: normalizedEmail,
         phone: null,
         password: hashedPassword,
-        verificationToken,
         role: 'customer',
         isVerified: false,
       });
+
+  if (global.dbAvailable !== false) {
+    await EmailVerificationToken.create({
+      token: verificationToken,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      userId: user.userId ?? user.id,
+    });
+  }
 
   return {
     message: 'Registration successful. Please verify your email.',
@@ -125,8 +131,16 @@ const login = async ({ email, password }) => {
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
 
-  user.refreshToken = refreshToken;
-  await saveUser(user);
+  if (global.dbAvailable === false) {
+    user.refreshToken = refreshToken;
+    await saveUser(user);
+  } else {
+    await RefreshToken.create({
+      token: refreshToken,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      userId: user.userId ?? user.id,
+    });
+  }
 
   return {
     message: 'Login successful.',
@@ -146,7 +160,11 @@ const refreshAccessToken = async ({ refreshToken }) => {
     ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(payload.id))
     : await User.findByPk(payload.id);
 
-  if (!user || user.refreshToken !== refreshToken) {
+  const storedToken = global.dbAvailable === false
+    ? null
+    : await RefreshToken.findOne({ where: { token: refreshToken, userId: payload.id } });
+
+  if (!user || (global.dbAvailable === false ? user.refreshToken !== refreshToken : !storedToken || storedToken.isRevoked || new Date(storedToken.expiresAt) < new Date())) {
     const error = new Error('Invalid refresh token.');
     error.status = 403;
     throw error;
@@ -175,9 +193,11 @@ const logout = async ({ refreshToken }) => {
     ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(userId))
     : await User.findByPk(userId);
 
-  if (user) {
+  if (user && global.dbAvailable === false) {
     user.refreshToken = null;
     await saveUser(user);
+  } else if (user) {
+    await RefreshToken.update({ isRevoked: true, revokedAt: new Date() }, { where: { userId: user.userId ?? user.id, token: refreshToken } });
   }
 
   return { message: 'Logged out.' };
@@ -192,9 +212,23 @@ const verifyEmail = async ({ token }) => {
     throw error;
   }
 
+  const verificationTokenRecord = global.dbAvailable === false
+    ? null
+    : await EmailVerificationToken.findOne({ where: { token, userId: user.userId ?? user.id } });
+
+  if (global.dbAvailable !== false && !verificationTokenRecord) {
+    const error = new Error('Invalid or expired verification token.');
+    error.status = 400;
+    throw error;
+  }
+
   user.isVerified = true;
-  user.verificationToken = null;
   await saveUser(user);
+
+  if (global.dbAvailable !== false && verificationTokenRecord) {
+    verificationTokenRecord.isUsed = true;
+    await verificationTokenRecord.save();
+  }
 
   return { message: 'Email verified successfully.' };
 };
@@ -209,10 +243,18 @@ const forgotPassword = async ({ email }) => {
   }
 
   const resetToken = jwt.sign({ id: user.userId ?? user.id, email: user.email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
-  user.passwordResetToken = resetToken;
-  user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
 
-  await saveUser(user);
+  if (global.dbAvailable === false) {
+    user.passwordResetToken = resetToken;
+    user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000);
+    await saveUser(user);
+  } else {
+    await PasswordResetToken.create({
+      token: resetToken,
+      expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+      userId: user.userId ?? user.id,
+    });
+  }
 
   return { message: 'Password reset instructions sent.', resetToken };
 };
@@ -220,20 +262,26 @@ const forgotPassword = async ({ email }) => {
 const resetPassword = async ({ token, newPassword }) => {
   const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
   const user = global.dbAvailable === false
-    ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(payload.id) && entry.passwordResetToken === token)
-    : await User.findOne({ where: { userId: payload.id, passwordResetToken: token } });
+    ? global.memoryUsers?.find((entry) => (entry.userId ?? entry.id) === Number(payload.id))
+    : await User.findByPk(payload.id);
 
-  if (!user || new Date(user.passwordResetExpires) < new Date()) {
+  const resetTokenRecord = global.dbAvailable === false
+    ? null
+    : await PasswordResetToken.findOne({ where: { token, userId: payload.id } });
+
+  if (!user || (global.dbAvailable === false ? false : !resetTokenRecord || resetTokenRecord.isUsed || new Date(resetTokenRecord.expiresAt) < new Date())) {
     const error = new Error('Invalid or expired reset token.');
     error.status = 400;
     throw error;
   }
 
   user.password = await bcrypt.hash(String(newPassword), 10);
-  user.passwordResetToken = null;
-  user.passwordResetExpires = null;
-
   await saveUser(user);
+
+  if (global.dbAvailable !== false && resetTokenRecord) {
+    resetTokenRecord.isUsed = true;
+    await resetTokenRecord.save();
+  }
 
   return { message: 'Password reset successful.' };
 };
