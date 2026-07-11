@@ -2,16 +2,29 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
 const User = sequelize.define('User', {
-  id: {
+  userId: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
+    field: "user_ID",
+  },
+  avatarUrl: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    defaultValue: 'default-avatar.png',
+    field: "avatar_url",
   },
   fullName: {
     type: DataTypes.STRING,
     allowNull: false,
+    field: "username",
   },
   email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+  },
+  phone:{
     type: DataTypes.STRING,
     allowNull: false,
     unique: true,
@@ -21,32 +34,34 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('guest', 'customer', 'staff', 'admin'),
+    type: DataTypes.ENUM(
+      'guest', 
+      'customer',
+      'staff', 
+      'admin'),
     defaultValue: 'customer',
+  },
+   userStatus: {
+      type: DataTypes.ENUM(
+        'Active',
+        'Inactive',
+        'Frozen'
+     ),
+     defaultValue: 'Active',
+     field: "user_status",
   },
   isVerified: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
   },
-  verificationToken: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  refreshToken: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  passwordResetToken: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  passwordResetExpires: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
+  createAt: {
+    type: DataTypes.DATEONLY,
+    defaultValue: DataTypes.NOW,
+    field: "create_at",
+  }
 }, {
-  tableName: 'users',
-  timestamps: true,
+  tableName: 'Users',
+  timestamps: false,
 });
 
 export default User;
