@@ -45,7 +45,7 @@ const Deliveries = sequelize.define('Delivery', {
         field: 'order_ID'
     }
 }, {
-    tableName: 'Delivery',
+    tableName: 'Deliveries',
     timestamps: false
 });
 

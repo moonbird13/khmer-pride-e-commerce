@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import { persistUser, findStoredUser } from '../utils/storage.js';
-import dotenv from 'dotenv';
-dotenv.config();
-=======
 import dotenv from 'dotenv';
 import {
   register as registerService,
@@ -17,7 +9,6 @@ import {
   resetPassword as resetPasswordService,
   changePassword as changePasswordService,
 } from '../services/authService.js';
->>>>>>> 252a5bd484a0db2b0118437b628075d47e4548ea
 
 dotenv.config();
 

@@ -56,7 +56,7 @@ const Order = sequelize.define('Order', {
         field: 'shipping_province'
     }
 }, {
-    tableName: 'Order',
+    tableName: 'Orders',
     timestamps: false
 });
 
