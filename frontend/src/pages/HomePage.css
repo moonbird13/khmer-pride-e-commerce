@@ -1,0 +1,163 @@
+.home-page {
+  display: grid;
+  gap: 3rem;
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.hero-section {
+  position: relative;
+  padding: clamp(2.5rem, 4vw, 4rem);
+  border-radius: 2rem;
+  background: linear-gradient(135deg, #f7efe7 0%, #fff8ef 55%, #f3efe7 100%);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+}
+
+.hero-section h1 {
+  max-width: 24rem;
+  margin: 0.5rem 0 1rem;
+  font-size: clamp(2.5rem, 4vw, 3.75rem);
+  line-height: 1.02;
+}
+
+.hero-section .hero-copy {
+  max-width: 40rem;
+  color: #4b5563;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.hero-badge {
+  display: inline-flex;
+  margin-top: 1.75rem;
+  padding: 0.8rem 1.25rem;
+  border-radius: 999px;
+  background: rgba(15, 81, 50, 0.12);
+  color: #0f5132;
+  font-weight: 600;
+}
+
+.section-block {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.category-grid,
+.product-grid,
+.review-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.category-grid {
+  grid-template-columns: repeat(4, minmax(16rem, 1fr));
+}
+
+.product-grid {
+  grid-template-columns: repeat(3, minmax(18rem, 1fr));
+}
+
+.review-grid {
+  grid-template-columns: repeat(3, minmax(18rem, 1fr));
+}
+
+.promotion-banner {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 2.5rem;
+  border-radius: 2rem;
+  background: linear-gradient(90deg, #ffecdc 0%, #fff7f0 100%);
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+}
+
+.promotion-banner h2 {
+  margin: 0.5rem 0 1rem;
+  font-size: clamp(2rem, 3vw, 2.5rem);
+}
+
+.promotion-banner p {
+  margin: 0 0 1.75rem;
+  max-width: 36rem;
+  color: #4b5563;
+  line-height: 1.8;
+}
+
+.eyebrow {
+  color: #0f5132;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.section-subtitle {
+  margin: 0 0 0.35rem;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.75rem;
+}
+
+@media (max-width: 1024px) {
+  .category-grid,
+  .product-grid,
+  .review-grid {
+    grid-template-columns: repeat(2, minmax(16rem, 1fr));
+  }
+
+  .promotion-banner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-page {
+    gap: 2rem;
+    padding: 1.5rem 0 3rem;
+  }
+
+  .hero-section {
+    padding: 2rem 1.25rem;
+  }
+
+  .hero-section h1 {
+    font-size: 2.25rem;
+  }
+
+  .hero-actions {
+    justify-content: stretch;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .category-grid,
+  .product-grid,
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+}

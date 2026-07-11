@@ -1,0 +1,39 @@
+.ui-card {
+  border-radius: 1.25rem;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  padding: 1.25rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.ui-category-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.ui-category-card__image {
+  min-height: 8rem;
+  border-radius: 1rem;
+  background: #f5f7f6;
+  display: grid;
+  place-items: center;
+  color: #0f5132;
+  font-weight: 700;
+}
+
+.ui-category-card__content h3 {
+  margin: 0 0 0.5rem;
+}
+
+.ui-category-card__content p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.7;
+}
+
+.ui-card__meta {
+  display: inline-flex;
+  margin-top: 0.75rem;
+  color: #6b7280;
+  font-size: 0.95rem;
+}

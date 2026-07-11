@@ -1,0 +1,36 @@
+.ui-input {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.ui-input__label {
+  color: #2f2f37;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.ui-input__field {
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 0.85rem;
+  border: 1px solid #d8d8e2;
+  padding: 0.95rem 1rem;
+  background: #ffffff;
+  color: #111111;
+}
+
+.ui-input__field:focus {
+  outline: none;
+  border-color: #0f5132;
+  box-shadow: 0 0 0 3px rgba(15, 81, 50, 0.1);
+}
+
+.ui-input--error .ui-input__field {
+  border-color: #c53030;
+}
+
+.ui-input__hint {
+  margin: 0;
+  color: #6e6e79;
+  font-size: 0.9rem;
+}

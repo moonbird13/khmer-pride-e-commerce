@@ -1,0 +1,25 @@
+.ui-review-card {
+  display: grid;
+  gap: 1rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+}
+
+.ui-review-card p {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.85;
+}
+
+.ui-review-card__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.ui-review-card__meta strong {
+  font-size: 0.95rem;
+}
