@@ -1,0 +1,195 @@
+.site-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e3e3e3;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.navbar-brand-wrap {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  text-decoration: none;
+  color: #111111;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.85rem;
+  background-color: #f1f6f4;
+  color: #0f5132;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.brand-copy {
+  display: grid;
+  gap: 0.2rem;
+  line-height: 1.1;
+}
+
+.brand-copy strong {
+  display: block;
+  font-size: 1rem;
+}
+
+.brand-copy small {
+  display: block;
+  color: #5f5f6c;
+  font-size: 0.8rem;
+}
+
+.navbar-toggle {
+  display: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.2rem;
+}
+
+.navbar-toggle span {
+  display: block;
+  width: 100%;
+  height: 0.18rem;
+  background: #111111;
+  border-radius: 2rem;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.navbar-link {
+  color: #2c2c35;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navbar-link:hover,
+.navbar-link.active {
+  color: #0f5132;
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-action-button,
+.navbar-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-action-button {
+  background: #f9fafb;
+  color: #2c2c35;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  border-radius: 50%;
+}
+
+.navbar-action-button:hover,
+.navbar-pill:hover {
+  background-color: #eff6f2;
+}
+
+.navbar-pill {
+  background: #ffffff;
+  border-color: #d8d8e2;
+  color: #111111;
+}
+
+.navbar-pill--primary {
+  background: #0f5132;
+  color: #ffffff;
+  border-color: #0f5132;
+}
+
+.navbar-pill--secondary {
+  background: #f5f5f5;
+  color: #111111;
+}
+
+@media (max-width: 900px) {
+  .navbar-toggle {
+    display: flex;
+  }
+
+  .navbar-links {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: #ffffff;
+    border-bottom: 1px solid #e3e3e3;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.25s ease;
+  }
+
+  .navbar-links.open {
+    max-height: 18rem;
+  }
+
+  .navbar-link {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #f2f2f4;
+  }
+
+  .navbar-actions {
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .site-navbar {
+    flex-wrap: wrap;
+    padding: 0.85rem 1rem;
+  }
+
+  .navbar-brand-wrap,
+  .navbar-actions {
+    width: 100%;
+  }
+
+  .navbar-actions {
+    justify-content: flex-end;
+    order: 3;
+  }
+}

@@ -1,0 +1,29 @@
+.ui-search {
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 999px;
+  background: #f5f6f7;
+  border: 1px solid #e5e7eb;
+  padding: 0.8rem 1rem;
+}
+
+.ui-search__icon {
+  margin-right: 0.75rem;
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.ui-search__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #111827;
+  font-size: 1rem;
+  min-width: 0;
+}
+
+.ui-search__input:focus {
+  outline: none;
+}

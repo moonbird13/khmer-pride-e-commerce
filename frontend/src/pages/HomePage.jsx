@@ -1,144 +1,116 @@
-import { useEffect, useState } from 'react';
-import Button from '../components/Button';
-import CategoryCard from '../components/CategoryCard';
+import Button from '../components/Button/Button.jsx';
+import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
 import Hero from '../components/Hero';
-import ProductCard from '../components/ProductCard';
-import ReviewCard from '../components/ReviewCard';
-import SearchBar from '../components/SearchBar';
+import Newsletter from '../components/Newsletter/Newsletter.jsx';
+import ProductCard from '../components/ProductCard/ProductCard.jsx';
+import ReviewCard from '../components/ReviewCard/ReviewCard.jsx';
 import SectionHeader from '../components/SectionHeader';
-import { useAuth } from '../contexts/AuthContext';
+import './HomePage.css';
+
+const categories = [
+  { id: 'fashion', name: 'Fashion', description: 'Silk bags, apparel, and accessories.', count: 24, image: '👜' },
+  { id: 'home', name: 'Home', description: 'Decor and kitchen essentials for every room.', count: 18, image: '🏺' },
+  { id: 'wellness', name: 'Wellness', description: 'Herbal care and self-care goods for daily calm.', count: 12, image: '🌿' },
+  { id: 'gifts', name: 'Gifts', description: 'Handcrafted gifts with authentic Cambodian charm.', count: 16, image: '🎁' },
+];
+
+const featuredProducts = [
+  { id: 1, name: 'Silk Tote', description: 'Hand-woven and designed for modern carry.', price: 42, rating: 4.8, category: 'Fashion', image: '👜' },
+  { id: 2, name: 'Ceramic Set', description: 'Elegant tableware for everyday rituals.', price: 36, rating: 4.6, category: 'Home', image: '🍶' },
+  { id: 3, name: 'Herbal Blend', description: 'A soothing cup crafted from local herbs.', price: 19, rating: 4.9, category: 'Wellness', image: '🌿' },
+  { id: 4, name: 'Silk Scarf', description: 'Lightweight texture and timeless finish.', price: 29, rating: 4.7, category: 'Fashion', image: '🧣' },
+];
+
+const bestSellers = [
+  { id: 5, name: 'Lotus Candle', description: 'Soft fragrance from hand-poured soy wax.', price: 22, rating: 4.9, category: 'Home', image: '🕯️' },
+  { id: 6, name: 'Tea Collection', description: 'Herbal blends made for evening calm.', price: 24, rating: 4.8, category: 'Wellness', image: '🍵' },
+  { id: 7, name: 'Canvas Backpack', description: 'Durable and polished for everyday use.', price: 54, rating: 4.7, category: 'Fashion', image: '🎒' },
+];
+
+const newArrivals = [
+  { id: 8, name: 'Ceramic Planter', description: 'Artful storage for houseplants and herbs.', price: 32, rating: 4.6, category: 'Home', image: '🪴' },
+  { id: 9, name: 'Spa Gift Set', description: 'Relaxing care essentials for home rituals.', price: 48, rating: 4.9, category: 'Wellness', image: '🛀' },
+  { id: 10, name: 'Woven Tray', description: 'A natural accent for living spaces.', price: 27, rating: 4.5, category: 'Home', image: '🧺' },
+];
+
+const reviews = [
+  { author: 'Sophea', role: 'Verified buyer', comment: 'My order arrived beautifully packaged and the quality exceeded expectations.', rating: 5 },
+  { author: 'Rith', role: 'Repeat customer', comment: 'I love supporting local makers and Khmer Pride makes it easy.', rating: 4.8 },
+  { author: 'Chan', role: 'New customer', comment: 'The product selection feels curated and stylish.', rating: 4.7 },
+];
 
 export default function HomePage() {
-  const { user, logout, api } = useAuth();
-  const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [email, setEmail] = useState('');
-
-  useEffect(() => {
-    const loadCatalog = async () => {
-      try {
-        const [productsResponse, categoriesResponse] = await Promise.all([
-          api.get('/products'),
-          api.get('/categories'),
-        ]);
-        setProducts(Array.isArray(productsResponse.data) ? productsResponse.data : productsResponse.data.products || []);
-        setCategories(Array.isArray(categoriesResponse.data) ? categoriesResponse.data : categoriesResponse.data.categories || []);
-      } catch (error) {
-        console.error('Catalog load failed', error);
-      }
-    };
-
-    loadCatalog();
-  }, [api]);
-
-  const handleAddToCart = async (product) => {
-    try {
-      await api.post('/cart', { productId: product.id, quantity: 1 });
-      alert(`${product.name} added to cart`);
-    } catch (error) {
-      console.error('Add to cart failed', error);
-    }
-  };
-
-  const visibleProducts = products.filter((product) => {
-    const search = searchTerm.toLowerCase();
-    return !search || product.name?.toLowerCase().includes(search) || product.description?.toLowerCase().includes(search);
-  });
-
-  const bestSellers = visibleProducts.slice(0, 3);
-  const newArrivals = visibleProducts.slice(-3);
-  const reviews = [
-    { id: 1, author: 'Sokha', role: 'Customer', comment: 'The packaging felt premium and the product quality was excellent.' },
-    { id: 2, author: 'Mina', role: 'Founder', comment: 'Khmer Pride makes it easy to support local craftsmanship.' },
-  ];
-
-  const heroActions = user ? (
-    <>
-      <Button to="/cart">View cart</Button>
-      <Button to="/orders" variant="secondary">My orders</Button>
-      <Button variant="secondary" onClick={logout}>Logout</Button>
-    </>
-  ) : (
-    <>
-      <Button to="/login">Login</Button>
-      <Button to="/register" variant="secondary">Register</Button>
-    </>
-  );
-
   return (
-    <div className="page-shell">
+    <main className="home-page">
       <Hero
-        eyebrow="Authentic Cambodian goods"
-        title="Khmer Pride brings heritage to your doorstep."
-        description="Buy directly from a trusted marketplace that celebrates Cambodian artistry, wellness, and everyday essentials."
-        actions={heroActions}
-      />
+        eyebrow="Authentic Cambodian living"
+        title="Everyday goods, made with Khmer pride."
+        description="Browse curated product collections, discover featured products, and support local makers with every purchase."
+        actions={(
+          <div className="hero-actions">
+            <Button to="/products">Explore now</Button>
+            <Button to="/register" variant="secondary">Create account</Button>
+          </div>
+        )}
+      >
+        <div className="hero-badge">Free shipping on orders over $60</div>
+      </Hero>
 
-      <section className="content-section">
-        <SectionHeader title="Shop by category" subtitle="Curated collections" />
-        <div className="product-grid">
+      <section className="section-block">
+        <SectionHeader title="Browse product collections" subtitle="Explore curated products" />
+        <div className="category-grid">
           {categories.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>
       </section>
 
-      <section className="content-section">
-        <SectionHeader title="Featured products" subtitle="Popular right now" action={<SearchBar value={searchTerm} onChange={setSearchTerm} />} />
+      <section className="section-block">
+        <SectionHeader title="Featured products" subtitle="Popular picks" />
         <div className="product-grid">
-          {visibleProducts.map((product) => (
-            <ProductCard key={product.id} product={product} user={user} onAddToCart={handleAddToCart} />
+          {featuredProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      <section className="content-section promo-banner">
+      <section className="promotion-banner">
         <div>
-          <p className="eyebrow">Limited offer</p>
-          <h3>Enjoy free shipping on orders over $50.</h3>
-          <p>Celebrate Cambodian craftsmanship with exclusive bundles and fast delivery.</p>
+          <p className="eyebrow">Limited time offer</p>
+          <h2>Take 20% off your first handcrafted order.</h2>
+          <p>Enjoy exclusive savings on thoughtfully made products from Cambodia.</p>
         </div>
-        <Button to="/products">Shop now</Button>
+        <Button to="/products" variant="primary">Browse collection</Button>
       </section>
 
-      <section className="content-section">
-        <SectionHeader title="Best sellers" subtitle="Most loved" />
+      <section className="section-block">
+        <SectionHeader title="Best sellers" subtitle="Top-rated favourites" />
         <div className="product-grid">
           {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} user={user} onAddToCart={handleAddToCart} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      <section className="content-section">
-        <SectionHeader title="New arrivals" subtitle="Fresh picks" />
+      <section className="section-block">
+        <SectionHeader title="New arrivals" subtitle="Fresh from the market" />
         <div className="product-grid">
           {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} user={user} onAddToCart={handleAddToCart} />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </section>
 
-      <section className="content-section">
-        <SectionHeader title="What our customers say" subtitle="Community reviews" />
-        <div className="product-grid">
+      <section className="section-block">
+        <SectionHeader title="Customer reviews" subtitle="Hear from buyers" />
+        <div className="review-grid">
           {reviews.map((review) => (
-            <ReviewCard key={review.id} review={review} />
+            <ReviewCard key={review.author} review={review} />
           ))}
         </div>
       </section>
 
-      <section className="content-section newsletter-card">
-        <div>
-          <p className="eyebrow">Stay updated</p>
-          <h3>Join our newsletter for launches and exclusive offers.</h3>
-        </div>
-        <form className="newsletter-form" onSubmit={(event) => { event.preventDefault(); setEmail(''); alert('Thanks for subscribing!'); }}>
-          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Enter your email" required />
-          <Button type="submit">Subscribe</Button>
-        </form>
-      </section>
-    </div>
+      <Newsletter />
+    </main>
   );
 }
