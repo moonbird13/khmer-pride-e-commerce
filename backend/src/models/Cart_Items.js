@@ -3,7 +3,7 @@ import sequelize from '../config/database.js';
 
 
 
-const Cart_Item = sequelize.define('Cart_Item', {
+const Cart_Items = sequelize.define('Cart_Item', {
     cartItemId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -30,4 +30,4 @@ const Cart_Item = sequelize.define('Cart_Item', {
     timestamps: false
 });
 
-export default Cart_Item;
+export default Cart_Items;

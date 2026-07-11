@@ -3,7 +3,7 @@ import sequelize from '../config/database.js';
 
 
 
-const Delivery = sequelize.define('Delivery', {
+const Deliveries = sequelize.define('Delivery', {
     deliveryId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -49,4 +49,4 @@ const Delivery = sequelize.define('Delivery', {
     timestamps: false
 });
 
-export default Delivery;
+export default Deliveries;
