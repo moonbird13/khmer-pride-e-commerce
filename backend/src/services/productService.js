@@ -1,6 +1,24 @@
-const products = [];
+import { Op } from 'sequelize';
+import db from '../models/index.js';
 
-const createProduct = ({
+const { Product, Category } = db;
+
+const toProductPayload = (product) => ({
+  id: product.productId,
+  name: product.productName,
+  description: product.productDescription,
+  price: Number(product.productPrice),
+  categoryId: product.categoryId,
+  category: product.Category ? { id: product.Category.categoryId, name: product.Category.categoryName } : null,
+  slug: product.slug,
+  isFeatured: Boolean(product.isFeatured),
+  isBestSeller: Boolean(product.isBestSeller),
+  isNewArrival: Boolean(product.isNewArrival),
+  salesCount: Number(product.salesCount || 0),
+  createdAt: product.createAt,
+});
+
+const createProduct = async ({
   productName,
   productPrice,
   productDescription = '',
@@ -10,8 +28,7 @@ const createProduct = ({
   isBestSeller = false,
   isNewArrival = false,
 }) => {
-  const product = {
-    productId: Date.now(),
+  const product = await Product.create({
     productName,
     productPrice: Number(productPrice),
     productDescription,
@@ -20,48 +37,85 @@ const createProduct = ({
     isFeatured: Boolean(isFeatured),
     isBestSeller: Boolean(isBestSeller),
     isNewArrival: Boolean(isNewArrival),
-    salesCount: 0,
-    createAt: new Date().toISOString(),
-  };
-  products.push(product);
-  return product;
+    createAt: new Date(),
+  });
+
+  return toProductPayload(product);
 };
 
-const listProducts = () => products;
+const listProducts = async () => {
+  const products = await Product.findAll({
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+    order: [['productId', 'ASC']],
+  });
 
-const getProductById = (id) => products.find((product) => product.productId === Number(id));
-
-const searchProducts = (query) => {
-  if (!query) return products;
-  const normalized = query.toLowerCase();
-  return products.filter((product) => (
-    product.productName.toLowerCase().includes(normalized)
-    || product.productDescription.toLowerCase().includes(normalized)
-  ));
+  return products.map(toProductPayload);
 };
 
-const getFeaturedProducts = () => {
-  const featured = products.filter((product) => product.isFeatured);
-  return featured.length ? featured.slice(0, 6) : products.slice(0, 6);
-};
+const getProductById = async (id) => {
+  const product = await Product.findByPk(Number(id), {
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+  });
 
-const getNewArrivals = () => {
-  return [...products]
-    .sort((a, b) => new Date(b.createAt) - new Date(a.createAt))
-    .slice(0, 6);
-};
-
-const getBestSellers = () => {
-  return [...products]
-    .sort((a, b) => (b.salesCount || 0) - (a.salesCount || 0))
-    .slice(0, 6);
-};
-
-const incrementProductSales = (productId, quantity = 1) => {
-  const product = getProductById(productId);
   if (!product) return null;
-  product.salesCount += Number(quantity);
-  return product;
+  return toProductPayload(product);
+};
+
+const searchProducts = async (query) => {
+  if (!query) return listProducts();
+
+  const normalized = query.toLowerCase();
+  const products = await Product.findAll({
+    where: {
+      [Op.or]: [
+        { productName: { [Op.like]: `%${normalized}%` } },
+        { productDescription: { [Op.like]: `%${normalized}%` } },
+      ],
+    },
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+  });
+
+  return products.map(toProductPayload);
+};
+
+const getFeaturedProducts = async () => {
+  const featured = await Product.findAll({
+    where: { isFeatured: true },
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+    limit: 6,
+    order: [['productId', 'ASC']],
+  });
+
+  return featured.length ? featured.map(toProductPayload) : (await listProducts()).slice(0, 6);
+};
+
+const getNewArrivals = async () => {
+  const products = await Product.findAll({
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+    order: [['createAt', 'DESC']],
+    limit: 6,
+  });
+
+  return products.map(toProductPayload);
+};
+
+const getBestSellers = async () => {
+  const products = await Product.findAll({
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+    order: [['salesCount', 'DESC']],
+    limit: 6,
+  });
+
+  return products.map(toProductPayload);
+};
+
+const incrementProductSales = async (productId, quantity = 1) => {
+  const product = await Product.findByPk(Number(productId));
+  if (!product) return null;
+
+  product.salesCount = (product.salesCount || 0) + Number(quantity);
+  await product.save();
+  return toProductPayload(product);
 };
 
 export {

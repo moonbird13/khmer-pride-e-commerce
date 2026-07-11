@@ -7,6 +7,12 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   port: process.env.DB_PORT,
   dialect: 'mysql',
   logging: false,
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
   pool: {
     max: 5,
     min: 0,

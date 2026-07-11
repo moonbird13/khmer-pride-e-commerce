@@ -4,8 +4,7 @@ import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import sequelize from './config/database.js';
-import User from './models/User.js';
+import db from './models/index.js';
 import authRoutes from './routes/authRoutes.js';
 import productCategoryRoutes from './routes/productCategoryRoutes.js';
 import cartOrderRoutes from './routes/cartOrderRoutes.js';
@@ -53,16 +52,76 @@ app.use('/api/auth', authRoutes);
 app.use('/api', productCategoryRoutes);
 app.use('/api', cartOrderRoutes);
 
+const seedInitialData = async () => {
+  const categoryCount = await db.Category.count();
+  if (categoryCount > 0) {
+    return;
+  }
+
+  const [snacks, tea, gifts] = await Promise.all([
+    db.Category.create({ categoryName: 'Snacks', categoryStatus: 'Active' }),
+    db.Category.create({ categoryName: 'Tea & Coffee', categoryStatus: 'Active' }),
+    db.Category.create({ categoryName: 'Gifts', categoryStatus: 'Active' }),
+  ]);
+
+  await db.Product.bulkCreate([
+    {
+      productName: 'Honey Rice Crackers',
+      productDescription: 'Crispy rice crackers with Cambodian honey glaze.',
+      productPrice: 8.5,
+      categoryId: snacks.categoryId,
+      slug: 'honey-rice-crackers',
+      isFeatured: true,
+      isBestSeller: true,
+      isNewArrival: true,
+      salesCount: 24,
+      createAt: new Date(),
+    },
+    {
+      productName: 'Bamboo Tea Blend',
+      productDescription: 'A fragrant blend of local herbs and tea leaves.',
+      productPrice: 12,
+      categoryId: tea.categoryId,
+      slug: 'bamboo-tea-blend',
+      isFeatured: true,
+      isBestSeller: false,
+      isNewArrival: true,
+      salesCount: 14,
+      createAt: new Date(),
+    },
+    {
+      productName: 'Khmer Gift Box',
+      productDescription: 'A curated gift box featuring local treats and crafts.',
+      productPrice: 25,
+      categoryId: gifts.categoryId,
+      slug: 'khmer-gift-box',
+      isFeatured: false,
+      isBestSeller: true,
+      isNewArrival: false,
+      salesCount: 32,
+      createAt: new Date(),
+    },
+  ]);
+};
+
 const startServer = async () => {
   try {
-    await sequelize.authenticate();
+    await db.sequelize.authenticate();
     global.dbAvailable = true;
-    await sequelize.sync({ alter: true });
+    await db.sequelize.sync({ alter: true });
+    await seedInitialData();
     app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT}`));
   } catch (error) {
     global.dbAvailable = false;
+
+    console.error('Database connection failed:');
+    console.error(error);
+
     console.warn('MySQL is unavailable. Falling back to an in-memory store for local development.');
-    app.listen(PORT, () => console.log(`Khmer Pride backend running on port http://localhost:${PORT} in demo mode`));
+
+    app.listen(PORT, () =>
+      console.log(`Khmer Pride backend running on http://localhost:${PORT} in demo mode`)
+    );
   }
 };
 
