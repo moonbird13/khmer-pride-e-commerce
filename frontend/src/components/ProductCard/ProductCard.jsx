@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import Button from '../Button/Button.jsx';
 import QuantitySelector from '../QuantitySelector/QuantitySelector.jsx';
 import Rating from '../Rating/Rating.jsx';
 import './ProductCard.css';
 
-export default function ProductCard({ product, user, onAddToCart, className = '' }) {
+export default function ProductCard({ product, onAddToCart, className = '' }) {
+  const { user } = useAuth();
   const { id, name, description, price, rating, image, category } = product || {};
   const [quantity, setQuantity] = useState(1);
 

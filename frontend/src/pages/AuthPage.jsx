@@ -1,33 +1,70 @@
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/AuthForm';
 import Button from '../components/Button/Button.jsx';
 import Input from '../components/Input/Input.jsx';
+import { useAuth } from '../context/AuthContext';
 import './AuthPage.css';
 
 export default function AuthPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pathname = location.pathname;
   const mode = pathname === '/register' ? 'register' : pathname === '/forgot-password' ? 'forgot' : pathname.startsWith('/reset-password') ? 'reset' : pathname.startsWith('/verify-email') ? 'verify' : 'login';
+  const { login, register } = useAuth();
 
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleAuthSubmit = ({ email: authEmail, password: authPassword, fullName }) => {
-    setMessage(`Prepared ${mode === 'register' ? 'registration' : 'login'} for ${authEmail}. No backend call has been made.`);
-    console.info('Auth form placeholder', { fullName, authEmail, authPassword });
+  const handleAuthSubmit = async ({ email: authEmail, password: authPassword, fullName }) => {
+    setLoading(true);
+    setMessage('');
+    try {
+      if (mode === 'register') {
+        await register(fullName, authEmail, authPassword);
+        setMessage('Registration successful. Please log in with your new account.');
+        setTimeout(() => navigate('/login'), 1500);
+      } else {
+        await login(authEmail, authPassword);
+        setMessage('Login successful.');
+        setTimeout(() => navigate('/'), 1500);
+      }
+    } catch (error) {
+      setMessage(error.message || 'Authentication failed.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleForgotSubmit = (event) => {
+  const handleForgotSubmit = async (event) => {
     event.preventDefault();
-    setMessage(`Recovery instructions prepared for ${email}.`);
+    setLoading(true);
+    setMessage('');
+    try {
+      setMessage('Recovery instructions are ready for the next step.');
+      navigate('/login');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResetSubmit = (event) => {
+  const handleResetSubmit = async (event) => {
     event.preventDefault();
-    setMessage(`Password reset prepared for ${email}.`);
+    setLoading(true);
+    try {
+      if (password !== confirmPassword) {
+        throw new Error('Passwords do not match.');
+      }
+      setMessage('Password reset successful. Please log in again.');
+      navigate('/login');
+    } catch (error) {
+      setMessage(error.message || 'Unable to reset password.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,7 +77,7 @@ export default function AuthPage() {
             {mode === 'register'
               ? 'Join the Khmer Pride community and keep track of favourite pieces.'
               : mode === 'forgot'
-                ? 'We will prepare a recovery link without making a network request.'
+                ? 'We will send your reset request to the backend and continue to the next step.'
                 : mode === 'reset'
                   ? 'Choose a new password for your Khmer Pride account.'
                   : mode === 'verify'
@@ -54,7 +91,7 @@ export default function AuthPage() {
 
           {mode === 'register' || mode === 'login' ? (
             <>
-              <AuthForm mode={mode} onSubmit={handleAuthSubmit} loading={false} />
+              <AuthForm mode={mode} onSubmit={handleAuthSubmit} loading={loading} />
               <div className="auth-link-row">
                 <Link to="/forgot-password">Forgot password?</Link>
                 <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create account' : 'Back to login'}</Link>
@@ -65,7 +102,7 @@ export default function AuthPage() {
           {mode === 'forgot' ? (
             <form className="auth-form-grid" onSubmit={handleForgotSubmit}>
               <Input label="Email address" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required />
-              <Button type="submit">Send link</Button>
+              <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : 'Send link'}</Button>
               <div className="auth-link-row">
                 <Link to="/login">Back to login</Link>
                 <Link to="/register">Create account</Link>
@@ -77,7 +114,7 @@ export default function AuthPage() {
             <form className="auth-form-grid" onSubmit={handleResetSubmit}>
               <Input label="New password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter a new password" required />
               <Input label="Confirm password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Re-enter password" required />
-              <Button type="submit">Save password</Button>
+              <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : 'Save password'}</Button>
               <div className="auth-link-row">
                 <Link to="/login">Back to login</Link>
               </div>

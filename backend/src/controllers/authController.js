@@ -9,6 +9,8 @@ import {
   resetPassword as resetPasswordService,
   changePassword as changePasswordService,
 } from '../services/authService.js';
+import { findStoredUser } from '../utils/storage.js';
+import User from '../models/User.js';
 
 dotenv.config();
 
@@ -101,6 +103,36 @@ const changePassword = async (req, res) => {
   }
 };
 
+const profile = async (req, res) => {
+  try {
+    const payload = req.user || {};
+    if (!payload.email && !payload.id) {
+      return res.status(401).json({ message: 'Authentication required.' });
+    }
+
+    let user = null;
+    if (global.dbAvailable === false) {
+      user = await findStoredUser(payload.email);
+    } else {
+      user = await User.findByPk(payload.id || payload.id);
+    }
+
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const result = {
+      id: user.userId ?? user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      isVerified: Boolean(user.isVerified),
+    };
+
+    return res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to load profile.' });
+  }
+};
+
 export {
   register,
   login,
@@ -110,4 +142,5 @@ export {
   forgotPassword,
   resetPassword,
   changePassword,
+  profile,
 };

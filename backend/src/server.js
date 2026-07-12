@@ -2,19 +2,25 @@ import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import bcrypt from 'bcrypt';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import db from './models/index.js';
+import { mockUsers } from './data/mockData.js';
 import authRoutes from './routes/authRoutes.js';
-import productCategoryRoutes from './routes/productCategoryRoutes.js';
-import cartOrderRoutes from './routes/cartOrderRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import cartRoutes from './routes/cartRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-global.dbAvailable = true;
+// Phase 5: Use mock data by default
+// Set ENABLE_DATABASE=true in .env to use real database
+global.dbAvailable = process.env.ENABLE_DATABASE === 'true' ? true : false;
 global.memoryUsers = [];
 
 app.use(cors({
@@ -49,8 +55,10 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api/auth', authRoutes);
-app.use('/api', productCategoryRoutes);
-app.use('/api', cartOrderRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
 const seedInitialData = async () => {
   const categoryCount = await db.Category.count();
@@ -104,25 +112,87 @@ const seedInitialData = async () => {
   ]);
 };
 
-const startServer = async () => {
-  try {
-    await db.sequelize.authenticate();
-    global.dbAvailable = true;
-    await db.sequelize.sync();
-    await seedInitialData();
-    app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT}`));
-  } catch (error) {
-    global.dbAvailable = false;
-
-    console.error('Database connection failed:');
-    console.error(error);
-
-    console.warn('MySQL is unavailable. Falling back to an in-memory store for local development.');
-
-    app.listen(PORT, () =>
-      console.log(`Khmer Pride backend running on http://localhost:${PORT} in demo mode`)
-    );
+const seedMockUsers = async () => {
+  global.memoryUsers = global.memoryUsers || [];
+  if (global.memoryUsers.length > 0) {
+    return;
   }
+
+  global.memoryUsers = await Promise.all(mockUsers.map(async (user) => ({
+    ...user,
+    password: await bcrypt.hash(
+      user.email === 'admin@khmerpride.com' ? 'admin123' : 'demo123',
+      10,
+    ),
+  })));
 };
 
+// const startServer = async () => {
+//   try {
+//     await db.sequelize.authenticate();
+//     global.dbAvailable = true;
+//     await db.sequelize.sync();
+//     await seedInitialData();
+//     app.listen(PORT, () => console.log(`Khmer Pride backend running on port ${PORT}`));
+//   } catch (error) {
+//     global.dbAvailable = false;
+
+//     console.error('Database connection failed:');
+//     console.error(error);
+
+//     console.warn('MySQL is unavailable. Falling back to an in-memory store for local development.');
+
+//     await seedMockUsers();
+
+//     app.listen(PORT, () =>
+//       console.log(`Khmer Pride backend running on http://localhost:${PORT} in demo mode`)
+//     );
+//   }
+// };
+
+const startServer = async () => {
+
+  // ===== MOCK MODE =====
+  if (process.env.ENABLE_DATABASE !== 'true') {
+    console.log("Running in MOCK MODE (database disabled)");
+
+    global.dbAvailable = false;
+
+    await seedMockUsers();
+
+    app.listen(PORT, () => {
+      console.log(`Khmer Pride backend running on http://localhost:${PORT}`);
+    });
+
+    return;
+  }
+
+  // ===== DATABASE MODE =====
+  try {
+
+    await db.sequelize.authenticate();
+
+    global.dbAvailable = true;
+
+    await db.sequelize.sync();
+
+    await seedInitialData();
+
+    app.listen(PORT, () => {
+      console.log(`Khmer Pride backend running on http://localhost:${PORT}`);
+    });
+
+  } catch (error) {
+
+    console.error(error);
+
+    process.exit(1);
+
+  }
+
+};
+
+
 startServer();
+
+

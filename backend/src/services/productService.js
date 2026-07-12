@@ -1,5 +1,13 @@
 import { Op } from 'sequelize';
 import db from '../models/index.js';
+import {
+  mockProducts,
+  getProductById as getMockProductById,
+  getProductsByCategory as getMockProductsByCategory,
+  searchProducts as searchMockProducts,
+  getFeaturedProducts as getMockFeaturedProducts,
+  getNewArrivals as getMockNewArrivals,
+} from '../data/mockData.js';
 
 const { Product, Category } = db;
 
@@ -28,6 +36,30 @@ const createProduct = async ({
   isBestSeller = false,
   isNewArrival = false,
 }) => {
+  // Mock mode: generate new ID
+  if (global.dbAvailable === false) {
+    const newProduct = {
+      productId: mockProducts.length + 1,
+      id: mockProducts.length + 1,
+      productName,
+      name: productName,
+      productPrice: Number(productPrice),
+      price: Number(productPrice),
+      productDescription,
+      description: productDescription,
+      categoryId: Number(categoryId),
+      slug,
+      isFeatured: Boolean(isFeatured),
+      isBestSeller: Boolean(isBestSeller),
+      isNewArrival: Boolean(isNewArrival),
+      salesCount: 0,
+      createAt: new Date(),
+      Category: null,
+    };
+    mockProducts.push(newProduct);
+    return toProductPayload(newProduct);
+  }
+
   const product = await Product.create({
     productName,
     productPrice: Number(productPrice),
@@ -44,6 +76,10 @@ const createProduct = async ({
 };
 
 const listProducts = async () => {
+  if (global.dbAvailable === false) {
+    return mockProducts.map(toProductPayload);
+  }
+
   const products = await Product.findAll({
     include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
     order: [['productId', 'ASC']],
@@ -53,6 +89,11 @@ const listProducts = async () => {
 };
 
 const getProductById = async (id) => {
+  if (global.dbAvailable === false) {
+    const product = getMockProductById(id);
+    return product ? toProductPayload(product) : null;
+  }
+
   const product = await Product.findByPk(Number(id), {
     include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
   });
@@ -62,6 +103,11 @@ const getProductById = async (id) => {
 };
 
 const searchProducts = async (query) => {
+  if (global.dbAvailable === false) {
+    const results = searchMockProducts(query);
+    return results.map(toProductPayload);
+  }
+
   if (!query) return listProducts();
 
   const normalized = query.toLowerCase();
@@ -78,7 +124,26 @@ const searchProducts = async (query) => {
   return products.map(toProductPayload);
 };
 
+const getProductsByCategory = async (categoryId) => {
+  if (global.dbAvailable === false) {
+    const results = getMockProductsByCategory(categoryId);
+    return results.map(toProductPayload);
+  }
+
+  const products = await Product.findAll({
+    where: { categoryId: Number(categoryId) },
+    include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+  });
+
+  return products.map(toProductPayload);
+};
+
 const getFeaturedProducts = async () => {
+  if (global.dbAvailable === false) {
+    const featured = getMockFeaturedProducts();
+    return featured.map(toProductPayload);
+  }
+
   const featured = await Product.findAll({
     where: { isFeatured: true },
     include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
@@ -90,6 +155,11 @@ const getFeaturedProducts = async () => {
 };
 
 const getNewArrivals = async () => {
+  if (global.dbAvailable === false) {
+    const products = getMockNewArrivals();
+    return products.map(toProductPayload);
+  }
+
   const products = await Product.findAll({
     include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
     order: [['createAt', 'DESC']],
@@ -123,6 +193,7 @@ export {
   listProducts,
   getProductById,
   searchProducts,
+  getProductsByCategory,
   getFeaturedProducts,
   getNewArrivals,
   getBestSellers,

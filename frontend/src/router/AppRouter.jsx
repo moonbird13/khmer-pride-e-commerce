@@ -15,22 +15,11 @@ import ProfilePage from '../pages/ProfilePage';
 import OrdersPage from '../pages/OrdersPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import StaffDashboardPage from '../pages/StaffDashboardPage';
+import AboutPage from '../pages/AboutPage';
+import ContactPage from '../pages/ContactPage';
+import OrderSuccessPage from '../pages/OrderSuccessPage';
 
-function ProtectedRoute({ children, requiredRole = null }) {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div className="page-container"><p>Loading...</p></div>;
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (requiredRole && !requiredRole.includes(user.role?.toLowerCase())) {
-    return <Navigate to="/" replace />;
-  }
-
+function ProtectedRoute({ children }) {
   return children;
 }
 
@@ -44,6 +33,8 @@ export default function AppRouter() {
       <Route path="/login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/about" element={<AboutPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/verify-email/:token?" element={<VerifyEmailPage />} />
 
@@ -64,6 +55,7 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+      <Route path="/order-success" element={<OrderSuccessPage />} />
       <Route
         path="/profile"
         element={

@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react';
+import { useCart } from '../context/CartContext';
 import Button from '../components/Button/Button.jsx';
 import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
 import Hero from '../components/Hero';
@@ -5,33 +7,9 @@ import Newsletter from '../components/Newsletter/Newsletter.jsx';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import ReviewCard from '../components/ReviewCard/ReviewCard.jsx';
 import SectionHeader from '../components/SectionHeader';
+import { categories as mockCategories } from '../data/categories';
+import { products as mockProducts } from '../data/products';
 import './HomePage.css';
-
-const categories = [
-  { id: 'fashion', name: 'Fashion', description: 'Silk bags, apparel, and accessories.', count: 24, image: '👜' },
-  { id: 'home', name: 'Home', description: 'Decor and kitchen essentials for every room.', count: 18, image: '🏺' },
-  { id: 'wellness', name: 'Wellness', description: 'Herbal care and self-care goods for daily calm.', count: 12, image: '🌿' },
-  { id: 'gifts', name: 'Gifts', description: 'Handcrafted gifts with authentic Cambodian charm.', count: 16, image: '🎁' },
-];
-
-const featuredProducts = [
-  { id: 1, name: 'Silk Tote', description: 'Hand-woven and designed for modern carry.', price: 42, rating: 4.8, category: 'Fashion', image: '👜' },
-  { id: 2, name: 'Ceramic Set', description: 'Elegant tableware for everyday rituals.', price: 36, rating: 4.6, category: 'Home', image: '🍶' },
-  { id: 3, name: 'Herbal Blend', description: 'A soothing cup crafted from local herbs.', price: 19, rating: 4.9, category: 'Wellness', image: '🌿' },
-  { id: 4, name: 'Silk Scarf', description: 'Lightweight texture and timeless finish.', price: 29, rating: 4.7, category: 'Fashion', image: '🧣' },
-];
-
-const bestSellers = [
-  { id: 5, name: 'Lotus Candle', description: 'Soft fragrance from hand-poured soy wax.', price: 22, rating: 4.9, category: 'Home', image: '🕯️' },
-  { id: 6, name: 'Tea Collection', description: 'Herbal blends made for evening calm.', price: 24, rating: 4.8, category: 'Wellness', image: '🍵' },
-  { id: 7, name: 'Canvas Backpack', description: 'Durable and polished for everyday use.', price: 54, rating: 4.7, category: 'Fashion', image: '🎒' },
-];
-
-const newArrivals = [
-  { id: 8, name: 'Ceramic Planter', description: 'Artful storage for houseplants and herbs.', price: 32, rating: 4.6, category: 'Home', image: '🪴' },
-  { id: 9, name: 'Spa Gift Set', description: 'Relaxing care essentials for home rituals.', price: 48, rating: 4.9, category: 'Wellness', image: '🛀' },
-  { id: 10, name: 'Woven Tray', description: 'A natural accent for living spaces.', price: 27, rating: 4.5, category: 'Home', image: '🧺' },
-];
 
 const reviews = [
   { author: 'Sophea', role: 'Verified buyer', comment: 'My order arrived beautifully packaged and the quality exceeded expectations.', rating: 5 },
@@ -40,6 +18,25 @@ const reviews = [
 ];
 
 export default function HomePage() {
+  const [categories] = useState(mockCategories.map((category) => ({
+    id: category.id,
+    name: category.name,
+    description: `${category.name} products curated for everyday living.`,
+    count: 0,
+    image: category.image,
+  })));
+  const [featuredProducts] = useState(mockProducts.filter((product) => product.isFeatured).slice(0, 4));
+  const [bestSellers] = useState(mockProducts.filter((product) => product.isBestSeller).slice(0, 3));
+  const [newArrivals] = useState(mockProducts.filter((product) => product.isNewArrival).slice(0, 3));
+
+  const visibleCategories = useMemo(() => categories.slice(0, 4), [categories]);
+  const visibleFeatured = useMemo(() => featuredProducts.slice(0, 4), [featuredProducts]);
+  const visibleBestSellers = useMemo(() => bestSellers.slice(0, 3), [bestSellers]);
+  const visibleNewArrivals = useMemo(() => newArrivals.slice(0, 3), [newArrivals]);
+
+  const { addToCart } = useCart();
+  const handleAddToCart = (product, quantity) => addToCart(product, quantity);
+
   return (
     <main className="home-page">
       <Hero
@@ -59,7 +56,7 @@ export default function HomePage() {
       <section className="section-block">
         <SectionHeader title="Browse product collections" subtitle="Explore curated products" />
         <div className="category-grid">
-          {categories.map((category) => (
+          {visibleCategories.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>
@@ -68,8 +65,8 @@ export default function HomePage() {
       <section className="section-block">
         <SectionHeader title="Featured products" subtitle="Popular picks" />
         <div className="product-grid">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {visibleFeatured.map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
           ))}
         </div>
       </section>
@@ -86,8 +83,8 @@ export default function HomePage() {
       <section className="section-block">
         <SectionHeader title="Best sellers" subtitle="Top-rated favourites" />
         <div className="product-grid">
-          {bestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {visibleBestSellers.map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
           ))}
         </div>
       </section>
@@ -95,8 +92,8 @@ export default function HomePage() {
       <section className="section-block">
         <SectionHeader title="New arrivals" subtitle="Fresh from the market" />
         <div className="product-grid">
-          {newArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {visibleNewArrivals.map((product) => (
+            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
           ))}
         </div>
       </section>

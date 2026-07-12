@@ -1,4 +1,12 @@
-import { createProduct, listProducts, getProductById } from '../services/productService.js';
+import {
+  createProduct,
+  listProducts,
+  getProductById,
+  searchProducts,
+  getProductsByCategory,
+  getFeaturedProducts,
+  getNewArrivals,
+} from '../services/productService.js';
 import { createCategory, listCategories, getCategoryById } from '../services/categoryService.js';
 
 const createCategoryHandler = async (req, res) => {
@@ -42,6 +50,21 @@ const createProductHandler = async (req, res) => {
 
 const listProductsHandler = async (req, res) => {
   try {
+    const { categoryId, search } = req.query;
+
+    // Filter by category if provided
+    if (categoryId) {
+      const products = await getProductsByCategory(categoryId);
+      return res.json(products);
+    }
+
+    // Search if query provided
+    if (search) {
+      const products = await searchProducts(search);
+      return res.json(products);
+    }
+
+    // Return all products
     const products = await listProducts();
     return res.json(products);
   } catch (error) {
@@ -61,6 +84,24 @@ const getProductByIdHandler = async (req, res) => {
   }
 };
 
+const getFeaturedProductsHandler = async (req, res) => {
+  try {
+    const products = await getFeaturedProducts();
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Unable to load featured products.' });
+  }
+};
+
+const getNewArrivalsHandler = async (req, res) => {
+  try {
+    const products = await getNewArrivals();
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Unable to load new arrivals.' });
+  }
+};
+
 export {
   createCategoryHandler,
   listCategoriesHandler,
@@ -68,4 +109,6 @@ export {
   createProductHandler,
   listProductsHandler,
   getProductByIdHandler,
+  getFeaturedProductsHandler,
+  getNewArrivalsHandler,
 };

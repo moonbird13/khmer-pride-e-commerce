@@ -1,0 +1,45 @@
+.ui-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+.ui-toast--success {
+  background: #10b981;
+  color: white;
+}
+
+.ui-toast--error {
+  background: #ef4444;
+  color: white;
+}
+
+.ui-toast--info {
+  background: #3b82f6;
+  color: white;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .ui-toast {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}

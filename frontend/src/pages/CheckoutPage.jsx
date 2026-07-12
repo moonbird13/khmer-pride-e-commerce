@@ -1,29 +1,28 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from '../components/Button/Button.jsx';
 import Input from '../components/Input/Input.jsx';
-import { products } from '../data/mockData';
+import { useCart } from '../context/CartContext';
 import './CheckoutPage.css';
 
-const mockOrderItems = [
-  { id: products[0].id, name: products[0].name, price: products[0].price, quantity: 1 },
-  { id: products[2].id, name: products[2].name, price: products[2].price, quantity: 2 },
-];
-
 export default function CheckoutPage() {
+  const { cartItems: orderItems, placeOrder } = useCart();
   const [fullName, setFullName] = useState('');
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [message, setMessage] = useState('');
+  const navigate = useNavigate();
 
-  const subtotal = mockOrderItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const subtotal = useMemo(() => orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [orderItems]);
   const shipping = 6;
   const total = subtotal + shipping;
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setMessage(`Order prepared for ${fullName || 'your account'} with ${paymentMethod === 'card' ? 'card payment' : 'cash on delivery'}.`);
+    placeOrder({ fullName, email, address, city, paymentMethod });
+    navigate('/order-success');
   };
 
   return (
@@ -60,7 +59,7 @@ export default function CheckoutPage() {
 
         <aside className="checkout-page__summary">
           <h2>Order summary</h2>
-          {mockOrderItems.map((item) => (
+          {orderItems.map((item) => (
             <div className="checkout-page__summary-row" key={item.id}>
               <span>{item.name} × {item.quantity}</span>
               <strong>${(item.price * item.quantity).toFixed(2)}</strong>

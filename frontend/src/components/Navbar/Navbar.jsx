@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 import './Navbar.css';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { cartCount } = useCart?.() || { cartCount: 0 };
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/products', label: 'Products' },
-    { to: '/', label: 'About' },
-    { to: '/', label: 'Contact' },
+    { to: '/about', label: 'About' },
+    { to: '/contact', label: 'Contact' },
   ];
 
   return (
@@ -60,6 +62,7 @@ export default function Navbar() {
         </Link>
         <Link className="navbar-action-button" to="/cart" aria-label="Cart">
           <span aria-hidden="true">🛒</span>
+          {cartCount > 0 ? <span style={{ marginLeft: '0.25rem', fontSize: '0.75rem' }}>({cartCount})</span> : null}
         </Link>
         {user ? (
           <>

@@ -3,6 +3,8 @@ import {
   addToCartHandler,
   getCartHandler,
   clearCartHandler,
+  updateCartItemHandler,
+  removeCartItemHandler,
   createOrderHandler,
   listOrdersHandler,
   getOrderByIdHandler,
@@ -13,6 +15,8 @@ const router = express.Router();
 
 router.get('/cart', authenticate, getCartHandler);
 router.post('/cart', authenticate, addToCartHandler);
+router.patch('/cart/items/:productId', authenticate, updateCartItemHandler);
+router.delete('/cart/items/:productId', authenticate, removeCartItemHandler);
 router.delete('/cart', authenticate, clearCartHandler);
 
 router.get('/orders', authenticate, listOrdersHandler);

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Button from '../components/Button/Button.jsx';
-import Input from '../components/Input/Input.jsx';
+import FilterSidebar from '../components/FilterSidebar/FilterSidebar.jsx';
+import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
-import SearchBar from '../components/SearchBar/SearchBar.jsx';
 import SectionHeader from '../components/SectionHeader';
-import { categories, products } from '../data/mockData';
+import { categories as mockCategories } from '../data/categories';
+import { products as mockProducts } from '../data/products';
 import './ShopPage.css';
 
 const PAGE_SIZE = 6;
@@ -17,26 +18,24 @@ export default function Products() {
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
 
+  const [products] = useState(mockProducts);
+  const [categories] = useState(mockCategories.map((category) => ({ id: category.id, name: category.name, image: category.image })));
   const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     setPage(1);
   }, [search, selectedCategory, maxPrice, sortBy]);
 
-  // initialize category from URL search param
-  useEffect(() => {
-    const cat = searchParams.get('category');
-    if (cat) {
-      const exists = categories.some((c) => c.id === cat);
-      setSelectedCategory(exists ? cat : 'all');
-    }
-  }, [searchParams]);
+  const cat = searchParams.get('category');
+  if (cat && categories.some((c) => c.id === cat) && selectedCategory !== cat) {
+    setSelectedCategory(cat);
+  }
 
   const filteredProducts = useMemo(() => {
     let nextProducts = products
-      .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()) || product.description.toLowerCase().includes(search.toLowerCase()))
-      .filter((product) => selectedCategory === 'all' || product.category === selectedCategory)
-      .filter((product) => product.price <= maxPrice);
+      .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()) || (product.description || '').toLowerCase().includes(search.toLowerCase()))
+      .filter((product) => selectedCategory === 'all' || Number(product.categoryId) === Number(selectedCategory))
+      .filter((product) => Number(product.price) <= maxPrice);
 
     if (sortBy === 'price-low') nextProducts = nextProducts.sort((a, b) => a.price - b.price);
     else if (sortBy === 'price-high') nextProducts = nextProducts.sort((a, b) => b.price - a.price);
@@ -49,6 +48,9 @@ export default function Products() {
   const pageCount = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const visibleProducts = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
+  const { addToCart } = useCart();
+  const handleAddToCart = (product, quantity) => addToCart(product, quantity);
+
   return (
     <main className="shop-page page-shell">
       <section className="hero-section">
@@ -58,45 +60,23 @@ export default function Products() {
       </section>
 
       <div className="shop-page__container">
-        <aside className="shop-page__sidebar" aria-label="Product filters">
-          <div className="shop-page__filter-group">
-            <h3>Search</h3>
-            <SearchBar value={search} onChange={setSearch} placeholder="Search products" />
-          </div>
-
-          <div className="shop-page__filter-group">
-            <h3>Product type</h3>
-            <div className="shop-page__categories">
-              {categories.map((category) => (
-                <button
-                  key={category.id}
-                  className={`shop-page__category-btn${selectedCategory === category.id ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setSelectedCategory(category.id);
-                    // update URL param so selection is shareable
-                    if (category.id === 'all') {
-                      searchParams.delete('category');
-                      setSearchParams(searchParams);
-                    } else {
-                      setSearchParams({ ...Object.fromEntries(searchParams), category: category.id });
-                    }
-                  }}
-                >
-                  <span className="category-icon">{category.image}</span>
-                  {category.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="shop-page__filter-group">
-            <h3>Price range</h3>
-            <div className="shop-page__price-input">
-              <label>Max price</label>
-              <Input type="number" value={maxPrice} onChange={(event) => setMaxPrice(Number(event.target.value || 0))} />
-            </div>
-          </div>
-        </aside>
+        <FilterSidebar
+          categories={categories}
+          selectedCategory={selectedCategory}
+          onSelectCategory={(categoryId) => {
+            setSelectedCategory(categoryId);
+            if (categoryId === 'all') {
+              searchParams.delete('category');
+              setSearchParams(searchParams);
+            } else {
+              setSearchParams({ ...Object.fromEntries(searchParams), category: String(categoryId) });
+            }
+          }}
+          maxPrice={maxPrice}
+          onPriceChange={setMaxPrice}
+          searchValue={search}
+          onSearchChange={setSearch}
+        />
 
         <section className="shop-page__content">
           <div className="shop-page__toolbar">
@@ -113,7 +93,7 @@ export default function Products() {
 
           <div className="product-grid">
             {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
             ))}
           </div>
 
