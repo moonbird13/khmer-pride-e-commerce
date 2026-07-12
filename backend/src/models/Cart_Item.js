@@ -26,7 +26,7 @@ const Cart_Item = sequelize.define('Cart_Item', {
         field: 'product_ID'
     }
 }, {
-    tableName: 'Cart_Item',
+    tableName: 'Cart_Items',
     timestamps: false
 });
 

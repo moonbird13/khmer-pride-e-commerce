@@ -33,7 +33,8 @@ export default function AuthPage() {
         setTimeout(() => navigate('/'), 1500);
       }
     } catch (error) {
-      setMessage(error.message || 'Authentication failed.');
+      const errorMessage = error?.response?.data?.message || error?.message || 'Authentication failed.';
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }

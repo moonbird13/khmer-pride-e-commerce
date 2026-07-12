@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { users as mockUsers } from '../data/users';
+import { api, setAuthToken } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -12,6 +12,7 @@ export function AuthProvider({ children }) {
     const savedToken = localStorage.getItem('khmer-pride-token');
     const savedUser = localStorage.getItem('khmer-pride-user');
     if (savedToken && savedUser) {
+      setAuthToken(savedToken);
       setToken(savedToken);
       setUser(JSON.parse(savedUser));
     }
@@ -19,41 +20,37 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = async (email, password) => {
-    const matchedUser = mockUsers.find((entry) => entry.email === email && entry.password === password);
-    if (!matchedUser) {
-      throw new Error('Invalid credentials.');
-    }
-
-    const accessToken = `demo-token-${matchedUser.id}`;
-    const loggedUser = { id: matchedUser.id, fullName: matchedUser.fullName, email: matchedUser.email, role: matchedUser.role };
+    const response = await api.post('/auth/login', { email, password });
+    const { accessToken, user: loggedUser } = response.data;
 
     localStorage.setItem('khmer-pride-token', accessToken);
     localStorage.setItem('khmer-pride-user', JSON.stringify(loggedUser));
+    setAuthToken(accessToken);
     setToken(accessToken);
     setUser(loggedUser);
-    return { accessToken, user: loggedUser };
+    return response.data;
   };
 
   const register = async (fullName, email, password) => {
-    const nextUser = {
-      id: `user-${Date.now()}`,
-      fullName,
-      email,
-      password,
-      role: 'customer',
-    };
-    mockUsers.push(nextUser);
-    return { user: { id: nextUser.id, fullName, email, role: 'customer' } };
+    const response = await api.post('/auth/register', { fullName, email, password });
+    return response.data;
   };
 
   const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      // Ignore logout errors and clear local state.
+    }
+
     localStorage.removeItem('khmer-pride-token');
     localStorage.removeItem('khmer-pride-user');
+    setAuthToken(null);
     setToken(null);
     setUser(null);
   };
 
-  const value = useMemo(() => ({ user, token, loading, login, register, logout }), [user, token, loading]);
+  const value = useMemo(() => ({ user, token, loading, login, register, logout, api }), [user, token, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
