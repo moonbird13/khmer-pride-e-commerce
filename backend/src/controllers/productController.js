@@ -7,6 +7,7 @@ import {
   getFeaturedProducts,
   getNewArrivals,
 } from '../services/productService.js';
+import { getFilteredProducts, getFilterOptions } from '../services/filterService.js';
 import { createCategory, listCategories, getCategoryById } from '../services/categoryService.js';
 
 const createCategoryHandler = async (req, res) => {
@@ -79,23 +80,36 @@ const createProductHandler = async (req, res) => {
 
 const listProductsHandler = async (req, res) => {
   try {
-    const { categoryId, search } = req.query;
+    const {
+      search = '',
+      categoryId = null,
+      location = null,
+      minPrice = null,
+      maxPrice = null,
+      brand = null,
+      sortBy = 'newest',
+      limit = 100,
+      offset = 0,
+    } = req.query;
 
-    // Filter by category if provided
-    if (categoryId) {
-      const products = await getProductsByCategory(categoryId);
-      return res.json(products);
-    }
+    // Build filter object
+    const filters = {
+      search,
+      categoryId: categoryId || null,
+      location: location || null,
+      minPrice: minPrice ? Number(minPrice) : null,
+      maxPrice: maxPrice ? Number(maxPrice) : null,
+      brand: brand || null,
+      sortBy,
+    };
 
-    // Search if query provided
-    if (search) {
-      const products = await searchProducts(search);
-      return res.json(products);
-    }
+    // Fetch filtered products
+    const result = await getFilteredProducts(filters, {
+      limit: Number(limit),
+      offset: Number(offset),
+    });
 
-    // Return all products
-    const products = await listProducts();
-    return res.json(products);
+    return res.json(result);
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Unable to load products.' });
   }
@@ -131,6 +145,15 @@ const getNewArrivalsHandler = async (req, res) => {
   }
 };
 
+const getFilterOptionsHandler = async (req, res) => {
+  try {
+    const options = await getFilterOptions();
+    return res.json(options);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Unable to load filter options.' });
+  }
+};
+
 export {
   createCategoryHandler,
   listCategoriesHandler,
@@ -140,4 +163,5 @@ export {
   getProductByIdHandler,
   getFeaturedProductsHandler,
   getNewArrivalsHandler,
+  getFilterOptionsHandler,
 };

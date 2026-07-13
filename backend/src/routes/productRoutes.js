@@ -4,10 +4,12 @@ import {
   createProductHandler,
   listProductsHandler,
   getProductByIdHandler,
+  getFilterOptionsHandler,
 } from '../controllers/productController.js';
 
 const router = express.Router();
 
+router.get('/options/filters', getFilterOptionsHandler);
 router.get('/', listProductsHandler);
 router.get('/:id', getProductByIdHandler);
 router.post(
