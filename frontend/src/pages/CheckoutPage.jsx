@@ -11,7 +11,7 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [city, setCity] = useState('');
   const [email, setEmail] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [paymentMethod, setPaymentMethod] = useState('cash');
   const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
@@ -43,10 +43,6 @@ export default function CheckoutPage() {
 
           <h3>Payment method</h3>
           <div className="checkout-page__payment-options">
-            <label className="checkout-page__payment-option">
-              <input type="radio" name="payment" value="card" checked={paymentMethod === 'card'} onChange={(event) => setPaymentMethod(event.target.value)} />
-              <span>Credit or debit card</span>
-            </label>
             <label className="checkout-page__payment-option">
               <input type="radio" name="payment" value="cash" checked={paymentMethod === 'cash'} onChange={(event) => setPaymentMethod(event.target.value)} />
               <span>Cash on delivery</span>
