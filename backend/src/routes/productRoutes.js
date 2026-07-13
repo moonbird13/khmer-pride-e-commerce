@@ -10,6 +10,12 @@ const router = express.Router();
 
 router.get('/', listProductsHandler);
 router.get('/:id', getProductByIdHandler);
-router.post('/', authenticate, authorizeRoles('admin', 'staff'), createProductHandler);
+router.post(
+    '/',
+    authenticate,
+    authorizeRoles('admin', 'staff'),
+    upload.single('image'),
+    createProductHandler
+);
 
 export default router;

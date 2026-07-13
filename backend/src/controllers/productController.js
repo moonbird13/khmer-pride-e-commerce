@@ -40,12 +40,41 @@ const getCategoryByIdHandler = async (req, res) => {
 };
 
 const createProductHandler = async (req, res) => {
-  try {
-    const product = await createProduct(req.body);
-    return res.status(201).json(product);
-  } catch (error) {
-    return res.status(500).json({ message: error.message || 'Unable to create product.' });
-  }
+    try {
+
+        let imageUrl = null;
+        let publicId = null;
+
+        if (req.file) {
+
+            const result = await uploadToCloudinary(
+                req.file.buffer,
+                "products"
+            );
+
+            imageUrl = result.secure_url;
+            publicId = result.public_id;
+        }
+
+        const product = await createProduct({
+
+            ...req.body,
+
+            image_url: imageUrl,
+
+            public_id: publicId
+
+        });
+
+        return res.status(201).json(product);
+
+    } catch (error) {
+
+        return res.status(500).json({
+            message:error.message
+        });
+
+    }
 };
 
 const listProductsHandler = async (req, res) => {
