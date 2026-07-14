@@ -5,6 +5,8 @@ import FilterSidebar from '../components/FilterSidebar/FilterSidebar.jsx';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import SectionHeader from '../components/SectionHeader';
+import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
+import '../pages/HomePage.css';
 import { categories as mockCategories } from '../data/categories';
 import { products as mockProducts } from '../data/products';
 import './ShopPage.css';
@@ -51,6 +53,8 @@ export default function Products() {
   const { addToCart } = useCart();
   const handleAddToCart = (product, quantity) => addToCart(product, quantity);
 
+  const visibleCategories = useMemo(() => categories.slice(0, 4), [categories]);
+
   return (
     <main className="shop-page page-shell">
       <section className="hero-section">
@@ -79,6 +83,7 @@ export default function Products() {
         />
 
         <section className="shop-page__content">
+
           <div className="shop-page__toolbar">
             <span className="shop-page__count">{filteredProducts.length} products found</span>
             <label className="shop-page__sort">
@@ -106,6 +111,15 @@ export default function Products() {
           </div>
         </section>
       </div>
+
+      <section className="section-block">
+        <SectionHeader title="Browse product collections" subtitle="Explore curated products" />
+        <div className="category-grid">
+          {visibleCategories.map((category) => (
+            <CategoryCard key={category.id} category={category} />
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
