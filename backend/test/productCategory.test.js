@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createCategory, listCategories, getCategoryById } from '../src/services/categoryService.js';
-import { createProduct, listProducts, getProductById } from '../src/services/productService.js';
+import { createCategory, listCategories, getCategoryById } from '../src/services/categoryService.js'; 
+import { createProduct, listProducts, getProductById,} from '../src/services/productService.js';
 
 test('category service can create and list categories', async () => {
   const category = await createCategory({ categoryName: 'Textiles', categoryStatus: 'Active' });

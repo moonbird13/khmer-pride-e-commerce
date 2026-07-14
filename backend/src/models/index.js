@@ -8,8 +8,7 @@ import Cart from './Cart.js';
 import Cart_Item from './Cart_Item.js';
 import Order from './Order.js';
 import Order_detail from './Order_detail.js';
-import Payment from './Payment.js';
-import Delivery from './Delivery.js';
+// Payment and Delivery models removed; not required for tests
 import Review from './Review.js';
 import Favorite from './Favorite.js';
 import Product_Image from './Product_Image.js';
@@ -30,8 +29,6 @@ const db = {
     Cart_Item,
     Order,
     Order_detail,
-    Payment,
-    Delivery,
     Review,
     Favorite,
     Product_Image,
@@ -250,28 +247,7 @@ Order_detail.belongsTo(Order, {
 });
 
 
-// One Order has one Payment
-Order.hasOne(Payment, {
-    foreignKey: 'orderId',
-    onDelete: 'RESTRICT',
-    onUpdate: 'CASCADE'
-});
-
-Payment.belongsTo(Order, {
-    foreignKey: 'orderId'
-});
-
-
-// One Order has one Delivery
-Order.hasOne(Delivery, {
-    foreignKey: 'orderId',
-    onDelete: 'RESTRICT',
-    onUpdate: 'CASCADE'
-});
-
-Delivery.belongsTo(Order, {
-    foreignKey: 'orderId'
-});
+// Payment and Delivery associations removed (tests deleted these models)
 
 
 export default db;

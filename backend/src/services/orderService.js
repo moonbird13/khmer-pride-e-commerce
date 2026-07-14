@@ -1,184 +1,186 @@
-import db from '../models/index.js';
-import { createOrder as createMockOrder, getUserOrders, getOrderById as getMockOrderById } from '../data/mockData.js';
+import {
+  findOrders,
+  findOrderById,
+  createOrderRecord,
+  createOrderDetail,
+  saveOrder
+} from "../repository/order.repository.js";
 
-const { Order, Order_detail } = db;
+import {findAddressById} from "../repository/address.repository.js";
 
-const createOrder = async ({ userId, items, total, shippingAddress = 'N/A', shippingCity = 'N/A', paymentMethod = 'card' }) => {
-  if (global.dbAvailable === false) {
-    const order = createMockOrder(userId, {
-      items,
-      total: Number(total),
-      shippingAddress,
-      shippingCity,
-      paymentMethod,
-    });
 
-    return {
-      id: order.orderId,
-      userId: order.userId,
-      items: order.items,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    };
+//----------------------------------------------------
+// Create Order
+//----------------------------------------------------
+
+export const createOrder = async ({
+  userId,
+  addressId,
+  items,
+  paymentMethod
+}) => {
+
+  // Get shipping address snapshot
+  const address = await findAddressById(addressId);
+  if (!address) {
+    throw new Error("Address not found");
   }
 
-  const order = await Order.create({
-    userId: Number(userId),
-    orderDate: new Date(),
-    totalAmount: Number(total),
-    orderStatus: 'Pending',
-    shippingHouseNumber: 'N/A',
-    shippingStreet: shippingAddress || 'N/A',
-    shippingCommune: 'N/A',
-    shippingDistrict: shippingCity || 'N/A',
-    shippingProvince: 'N/A',
+  // Calculate total
+  const total = items.reduce((sum, item) => {
+
+    const subtotal = Number(item.price) * Number(item.quantity);
+    return sum + subtotal;
+
+  }, 0);
+
+
+  // Create order record
+  const order = await createOrderRecord({
+
+    userId,
+    total,
+    address: {
+
+      houseNumber: address.houseNumber,
+      street: address.street,
+      commune: address.commune,
+      district: address.district,
+      province: address.province
+
+    }
+
   });
 
-  await Promise.all(items.map((item) => Order_detail.create({
-    orderId: order.orderId,
-    productId: Number(item.productId),
-    quantity: Number(item.quantity),
-    unitPrice: Number(item.price || 0),
-    subTotal: Number(item.price || 0) * Number(item.quantity),
-  })));
+
+
+  // Create order details
+  await Promise.all(
+
+    items.map(item => {
+
+      const subtotal =
+        Number(item.price) *
+        Number(item.quantity);
+
+      return createOrderDetail({
+        orderId: order.orderId,
+        productId: item.productId,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        subTotal: subtotal
+      });
+
+    })
+
+  );
+
+  return formatOrder(order, items);
+
+};
+
+
+
+//----------------------------------------------------
+// Get Orders
+//----------------------------------------------------
+
+export const listOrders = async(userId)=>{
+
+  const orders = await findOrders(userId);
+
+  return orders.map(order =>
+    formatOrder(order)
+  );
+
+};
+
+
+//----------------------------------------------------
+// Get Order By ID
+//----------------------------------------------------
+
+export const getOrder = async(orderId)=>{
+
+  const order = await findOrderById(orderId);
+
+  if(!order){
+    return null;
+  }
+
+  return formatOrder(order);
+
+};
+
+
+
+//----------------------------------------------------
+// Cancel Order
+//----------------------------------------------------
+
+export const cancelOrder = async(orderId)=>{
+
+  const order = await findOrderById(orderId);
+
+  if(!order){
+    return null;
+  }
+
+  // Business rule
+  if(order.orderStatus === "Completed"){
+    throw new Error(
+      "Completed order cannot be cancelled"
+    );
+  }
+
+
+  order.orderStatus = "Cancelled";
+  await saveOrder(order);
+  return formatOrder(order);
+
+};
+
+
+
+//----------------------------------------------------
+// Update Status (Admin/Staff)
+//----------------------------------------------------
+
+export const updateOrderStatus = async(
+  orderId,
+  status
+)=>{
+
+  const order = await findOrderById(orderId);
+
+  if(!order){
+    return null;
+  }
+
+  order.orderStatus = status;
+  await saveOrder(order);
+
+  return formatOrder(order);
+
+};
+
+
+
+//----------------------------------------------------
+// Formatter
+//----------------------------------------------------
+
+const formatOrder = (order, items = []) => {
 
   return {
+
     id: order.orderId,
     userId: order.userId,
     items,
     total: Number(order.totalAmount),
     status: order.orderStatus,
-    createdAt: order.orderDate,
+    createdAt: order.orderDate
+
   };
+
 };
-
-const listOrders = async (userId = null) => {
-  if (global.dbAvailable === false) {
-    if (!userId) return [];
-    const orders = getUserOrders(userId);
-    return orders.map((order) => ({
-      id: order.orderId,
-      userId: order.userId,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    }));
-  }
-
-  const where = userId ? { userId: Number(userId) } : {};
-  const orders = await Order.findAll({ where, order: [['orderId', 'DESC']] });
-  return orders.map((order) => ({
-    id: order.orderId,
-    userId: order.userId,
-    total: Number(order.totalAmount),
-    status: order.orderStatus,
-    createdAt: order.orderDate,
-  }));
-};
-
-const getOrderById = async (id) => {
-  if (global.dbAvailable === false) {
-    const order = getMockOrderById(id);
-    if (!order) return null;
-    return {
-      id: order.orderId,
-      userId: order.userId,
-      items: order.items,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    };
-  }
-
-  const order = await Order.findByPk(Number(id));
-  if (!order) return null;
-  return {
-    id: order.orderId,
-    userId: order.userId,
-    total: Number(order.totalAmount),
-    status: order.orderStatus,
-    createdAt: order.orderDate,
-  };
-};
-
-const getOrderHistory = async (userId) => {
-  if (global.dbAvailable === false) {
-    const orders = getUserOrders(userId);
-    return orders.map((order) => ({
-      id: order.orderId,
-      userId: order.userId,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    }));
-  }
-
-  const orders = await Order.findAll({ where: { userId: Number(userId) }, order: [['orderId', 'DESC']] });
-  return orders.map((order) => ({
-    id: order.orderId,
-    userId: order.userId,
-    total: Number(order.totalAmount),
-    status: order.orderStatus,
-    createdAt: order.orderDate,
-  }));
-};
-
-const cancelOrder = async (id) => {
-  if (global.dbAvailable === false) {
-    const order = getMockOrderById(id);
-    if (!order) return null;
-    order.orderStatus = 'Cancelled';
-    order.status = 'Cancelled';
-    return {
-      id: order.orderId,
-      userId: order.userId,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    };
-  }
-
-  const order = await Order.findByPk(Number(id));
-  if (!order) return null;
-  order.orderStatus = 'Cancelled';
-  await order.save();
-  return {
-    id: order.orderId,
-    userId: order.userId,
-    total: Number(order.totalAmount),
-    status: order.orderStatus,
-    createdAt: order.orderDate,
-  };
-};
-
-export { createOrder, listOrders, getOrderById, getOrderHistory, cancelOrder };
-const updateOrderStatus = async (id, status) => {
-  if (global.dbAvailable === false) {
-    const order = getMockOrderById(id);
-    if (!order) return null;
-    order.orderStatus = status;
-    order.status = status;
-    return {
-      id: order.orderId,
-      userId: order.userId,
-      total: Number(order.totalAmount),
-      status: order.orderStatus,
-      createdAt: order.orderDate,
-    };
-  }
-
-  const order = await Order.findByPk(Number(id));
-  if (!order) return null;
-  order.orderStatus = status;
-  await order.save();
-  return {
-    id: order.orderId,
-    userId: order.userId,
-    total: Number(order.totalAmount),
-    status: order.orderStatus,
-    createdAt: order.orderDate,
-  };
-};
-
-export { updateOrderStatus };
