@@ -1,7 +1,7 @@
 .home-page {
   display: grid;
   gap: 3rem;
-  width: min(1180px, calc(100% - 2rem));
+  width: 90%;
   margin: 0 auto;
   padding: 2rem 0 4rem;
 }
@@ -59,11 +59,11 @@
 }
 
 .category-grid {
-  grid-template-columns: repeat(4, minmax(16rem, 1fr));
+  grid-template-columns: repeat(5, minmax(16rem, 1fr));
 }
 
 .product-grid {
-  grid-template-columns: repeat(3, minmax(18rem, 1fr));
+  grid-template-columns: repeat(5, minmax(16rem, 1fr));
 }
 
 .review-grid {

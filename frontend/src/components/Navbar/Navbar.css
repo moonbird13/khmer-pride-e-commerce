@@ -1,14 +1,18 @@
 .site-navbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1rem;
-  padding: 1rem 1.25rem;
+  padding: 1rem 1.5rem;
   background-color: #ffffff;
   border-bottom: 1px solid #e3e3e3;
   position: sticky;
   top: 0;
   z-index: 20;
+}
+
+.site-navbar .navbar-main {
+  width: min(1300px, 100%);
 }
 
 .navbar-brand-wrap {
@@ -79,6 +83,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
+  justify-content: center;
 }
 
 .navbar-link {

@@ -75,7 +75,7 @@ export default function HomePage() {
       </Hero>
 
       <section className="section-block">
-        <SectionHeader title="Shop products" subtitle="Filter and discover products" />
+        
         <ProductFilterBar
           products={mockProducts}
           categories={categories}
@@ -93,6 +93,7 @@ export default function HomePage() {
           onSortChange={(value) => setSortValue(value)}
           countLabel={`${filteredProducts.length} products`}
         />
+        <SectionHeader title="Shop products" subtitle="Filter and discover products" />
 
         <div className="product-grid">
           {filteredProducts.map((product) => (

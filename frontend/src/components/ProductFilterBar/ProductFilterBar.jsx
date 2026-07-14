@@ -107,8 +107,6 @@ export default function ProductFilterBar({
           </select>
         </label>
       </div>
-
-      {countLabel ? <p className="product-filter-bar__count">{countLabel}</p> : null}
     </section>
   );
 }
