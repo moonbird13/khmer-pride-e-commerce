@@ -1,10 +1,10 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import * as userRepository from '../repository/user.repository.js';
-import * as emailVerificationTokenRepository from '../repository/emailVerificationToken.repository.js';
-import * as refreshTokenRepository from '../repository/refreshToken.repository.js';
-import * as passwordResetTokenRepository from '../repository/passwordResetToken.repository.js';
+import * as userRepository from '../repositories/user.repository.js';
+import * as emailVerificationTokenRepository from '../repositories/emailVerificationToken.repository.js';
+import * as refreshTokenRepository from '../repositories/refreshToken.repository.js';
+import * as passwordResetTokenRepository from '../repositories/passwordResetToken.repository.js';
 
 dotenv.config();
 

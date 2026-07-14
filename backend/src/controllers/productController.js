@@ -9,6 +9,7 @@ import {
 } from '../services/productService.js';
 import { getFilteredProducts, getFilterOptions } from '../services/filterService.js';
 import { createCategory, listCategories, getCategoryById } from '../services/categoryService.js';
+import uploadToCloudinary from '../utils/uploadToCloudinary.js';
 
 const createCategoryHandler = async (req, res) => {
   try {
@@ -61,9 +62,8 @@ const createProductHandler = async (req, res) => {
 
             ...req.body,
 
-            image_url: imageUrl,
-
-            public_id: publicId
+            imageUrl,
+            publicId,
 
         });
 

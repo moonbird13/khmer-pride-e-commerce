@@ -4,9 +4,9 @@ import {
   createOrderRecord,
   createOrderDetail,
   saveOrder
-} from "../repository/order.repository.js";
+} from "../repositories/order.repository.js";
 
-import {findAddressById} from "../repository/address.repository.js";
+import { findAddressById } from "../repositories/address.repository.js";
 
 
 //----------------------------------------------------
@@ -110,6 +110,10 @@ export const getOrder = async(orderId)=>{
 
   return formatOrder(order);
 
+};
+
+export const getOrderById = async(orderId)=>{
+  return getOrder(orderId);
 };
 
 

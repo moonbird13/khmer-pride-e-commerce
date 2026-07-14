@@ -5,7 +5,7 @@ import {
     addCartItem,
     deleteCartItem,
     clearCartItems
-} from "../repository/cart.repository.js";
+} from "../repositories/cart.repository.js";
 
 
 
@@ -106,10 +106,33 @@ export const clearCart = async(userId)=>{
 
 };
 
+export const updateQuantity = async({
+    userId,
+    productId,
+    quantity
+})=>{
+    const cart = await getOrCreateCart(userId);
+    const existingItem = await findCartItem(cart.cartId, productId);
+
+    if (!existingItem) {
+        return getCart(userId);
+    }
+
+    const nextQuantity = Number(quantity);
+    if (Number.isNaN(nextQuantity) || nextQuantity <= 0) {
+        await deleteCartItem(cart.cartId, productId);
+        return getCart(userId);
+    }
+
+    existingItem.quantity = nextQuantity;
+    await existingItem.save();
+    return getCart(userId);
+};
 
 export default {
     getCart,
     addToCart,
     removeCartItem,
-    clearCart
+    clearCart,
+    updateQuantity
 }

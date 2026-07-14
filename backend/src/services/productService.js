@@ -8,7 +8,7 @@ import {
  findNewProducts,
  findBestSellerProducts,
  saveProduct
-} from "../repository/product.repository.js";
+} from "../repositories/product.repository.js";
 
 
 
@@ -89,9 +89,37 @@ export const searchProducts = async(query)=>{
 
 };
 
+// Category listing
+export const getProductsByCategory = async(categoryId)=>{
+    const products = await findProductsByCategory(categoryId);
+    return products.map(formatProduct);
+};
+
+// Featured products
+export const getFeaturedProducts = async()=>{
+    const products = await findFeaturedProducts();
+    return products.map(formatProduct);
+};
+
+// New arrivals
+export const getNewArrivals = async()=>{
+    const products = await findNewProducts();
+    return products.map(formatProduct);
+};
+
+// Best sellers
+export const getBestSellerProducts = async()=>{
+    const products = await findBestSellerProducts();
+    return products.map(formatProduct);
+};
+
 export default {
     createProduct,
     listProducts,
     getProductById,
-    searchProducts
+    searchProducts,
+    getProductsByCategory,
+    getFeaturedProducts,
+    getNewArrivals,
+    getBestSellerProducts
 }

@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate, authorizeRoles } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
 import {
   createProductHandler,
   listProductsHandler,
