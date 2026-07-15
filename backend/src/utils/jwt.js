@@ -3,16 +3,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const generateAccessToken = (user) => {
-  if (!process.env.JWT_ACCESS_SECRET) {
-    throw new Error('JWT_ACCESS_SECRET is not set');
-  }
-  return jwt.sign(
-    { id: user.id, email: user.email, role: user.role },
-    process.env.JWT_ACCESS_SECRET,
-    { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
-  );
-};
+const generateAccessToken = (user) => jwt.sign(
+{
+ id:user.userId ?? user.id,
+ email:user.email,
+ phone:user.phone,
+ role:user.role
+},
+process.env.JWT_ACCESS_SECRET,
+{
+ expiresIn:'15m'
+}
+);
 
 const generateRefreshToken = (user) => {
   if (!process.env.JWT_REFRESH_SECRET) {

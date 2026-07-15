@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { orders as initialOrders } from '../data/orders';
 
 const CartContext = createContext(null);
 
@@ -18,7 +17,7 @@ const readStoredState = (key, fallback) => {
 
 export function CartProvider({ children }) {
   const [cartItems, setCartItems] = useState(() => readStoredState('khmer-pride-cart', []));
-  const [orders, setOrders] = useState(() => readStoredState('khmer-pride-orders', initialOrders));
+  const [orders, setOrders] = useState(() => readStoredState('khmer-pride-orders', []));
   const [toast, setToast] = useState(null);
 
   useEffect(() => {

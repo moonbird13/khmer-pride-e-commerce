@@ -1,17 +1,77 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../components/Button/Button.jsx';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import QuantitySelector from '../components/QuantitySelector/QuantitySelector.jsx';
-import { getProductById, products as mockProducts } from '../data/products';
+import api from '../services/api';
 import './ProductDetailPage.css';
+
+const normalizeProducts = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.products)) return payload.products;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const [quantity, setQuantity] = useState(1);
-  const product = useMemo(() => getProductById(id), [id]);
-  const relatedProducts = useMemo(() => mockProducts.filter((item) => item.id !== product?.id).slice(0, 2), [product]);
+  const [product, setProduct] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (!id) {
+        setProduct(null);
+        setRelatedProducts([]);
+        return;
+      }
+
+      try {
+        const [productResponse, productsResponse] = await Promise.all([
+          api.get(`/products/${id}`),
+          api.get('/products'),
+        ]);
+
+        const nextProduct = productResponse.data;
+        const nextProducts = normalizeProducts(productsResponse.data);
+
+        setProduct({
+          id: nextProduct?.id ?? nextProduct?.productId,
+          name: nextProduct?.name ?? nextProduct?.productName,
+          description: nextProduct?.description ?? nextProduct?.productDescription,
+          price: Number(nextProduct?.price ?? nextProduct?.productPrice ?? 0),
+          category: nextProduct?.category ?? (nextProduct?.Category ? { id: nextProduct.Category.categoryId, name: nextProduct.Category.categoryName } : null),
+          isFeatured: Boolean(nextProduct?.isFeatured),
+          isBestSeller: Boolean(nextProduct?.isBestSeller),
+          isNewArrival: Boolean(nextProduct?.isNewArrival),
+          image: nextProduct?.image ?? nextProduct?.imageUrl ?? null,
+        });
+
+        setRelatedProducts(nextProducts
+          .map((item) => ({
+            id: item.id ?? item.productId,
+            name: item.name ?? item.productName,
+            description: item.description ?? item.productDescription,
+            price: Number(item.price ?? item.productPrice ?? 0),
+            category: item.category ?? (item.Category ? { id: item.Category.categoryId, name: item.Category.categoryName } : null),
+            isFeatured: Boolean(item.isFeatured),
+            isBestSeller: Boolean(item.isBestSeller),
+            isNewArrival: Boolean(item.isNewArrival),
+            image: item.image ?? item.imageUrl ?? null,
+          }))
+          .filter((item) => String(item.id) !== String(nextProduct?.id ?? nextProduct?.productId))
+          .slice(0, 2));
+      } catch (error) {
+        console.error('Failed to load product details.', error);
+        setProduct(null);
+        setRelatedProducts([]);
+      }
+    };
+
+    loadProduct();
+  }, [id]);
 
   const { addToCart } = useCart();
   const handleAddToCart = () => addToCart(product, quantity);

@@ -19,8 +19,12 @@ export function AuthProvider({ children }) {
     setLoading(false);
   }, []);
 
-  const login = async (email, password) => {
-    const response = await api.post('/auth/login', { email, password });
+  const login = async (identifier, password) => {
+    const response = await api.post('/auth/login', {
+      identifier,
+      password,
+    });
+
     const { accessToken, user: loggedUser } = response.data;
 
     localStorage.setItem('khmer-pride-token', accessToken);
@@ -28,6 +32,7 @@ export function AuthProvider({ children }) {
     setAuthToken(accessToken);
     setToken(accessToken);
     setUser(loggedUser);
+
     return response.data;
   };
 

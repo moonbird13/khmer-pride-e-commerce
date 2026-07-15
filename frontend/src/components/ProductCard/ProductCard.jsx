@@ -9,12 +9,13 @@ export default function ProductCard({ product, onAddToCart, className = '' }) {
   const { user } = useAuth();
   const { id, name, description, price, rating, image, category } = product || {};
   const [quantity, setQuantity] = useState(1);
+  const categoryName = typeof category === 'object' ? category?.name : category;
 
   return (
     <article className={`ui-card ui-product-card ${className}`.trim()}>
-      <div className="ui-product-card__image">{image || category || 'Featured'}</div>
+      <div className="ui-product-card__image">{image || categoryName || 'Featured'}</div>
       <div className="ui-product-card__content">
-        <p className="ui-card__meta">{category || 'Featured product'}</p>
+        <p className="ui-card__meta">{categoryName || 'Featured product'}</p>
         <h3>{name}</h3>
         <p>{description}</p>
       </div>

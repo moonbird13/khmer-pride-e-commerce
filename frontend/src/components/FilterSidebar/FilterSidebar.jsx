@@ -23,7 +23,7 @@ export default function FilterSidebar({
       </div>
 
       <div className="shop-page__filter-group">
-        <h3>Product type</h3>
+        <h3>Category</h3>
         <div className="shop-page__categories">
           {categories.map((category) => (
             <button

@@ -9,17 +9,17 @@ process.env.JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 const { register, login, refreshAccessToken, verifyEmail, forgotPassword, resetPassword, changePassword } = await import('../src/services/authService.js');
 
 const resetTestState = () => {
-  global.dbAvailable = true;
-  global.memoryUsers = [];
+  // No-op placeholder: tests use repository/database implementations only.
 };
 
 const createTestUser = (prefix) => {
-  const suffix = Date.now();
+  const suffix = `${Date.now()}${Math.floor(Math.random() * 1000000)}`;
+  const phoneTail = `${Math.floor(Math.random() * 900000000) + 100000000}`;
   return {
     fullName: `${prefix} Example`,
     email: `${prefix.toLowerCase()}${suffix}@example.com`,
     password: 'secret123',
-    phone: `+855100000${String(suffix).slice(-3)}`,
+    phone: `+855${phoneTail}`,
   };
 };
 

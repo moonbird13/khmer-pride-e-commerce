@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import User from "../models/User.js";
 
 const normalizeEmail = (email) =>
@@ -22,6 +23,22 @@ export const findUserByEmail = async (email) => {
   return await User.findOne({
     where: {
       email: normalizeEmail(email),
+    },
+  });
+};
+
+// Find a user by email or phone identifier.
+export const findUserByIdentifier = async (identifier) => {
+  return await User.findOne({
+    where: {
+      [Op.or]: [
+        {
+          email: identifier,
+        },
+        {
+          phone: identifier,
+        },
+      ],
     },
   });
 };
@@ -90,6 +107,7 @@ export default {
   findAllUsers,
   findUserById,
   findUserByEmail,
+  findUserByIdentifier,
   addUser,
   updateUser,
   deleteUser,

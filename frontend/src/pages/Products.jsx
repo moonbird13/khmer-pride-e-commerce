@@ -7,11 +7,24 @@ import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import SectionHeader from '../components/SectionHeader';
 import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
 import '../pages/HomePage.css';
-import { categories as mockCategories } from '../data/categories';
-import { products as mockProducts } from '../data/products';
+import api from '../services/api';
 import './ShopPage.css';
 
 const PAGE_SIZE = 6;
+
+const normalizeProducts = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.products)) return payload.products;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
+
+const normalizeCategories = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.categories)) return payload.categories;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
 
 export default function Products() {
   const [search, setSearch] = useState('');
@@ -19,23 +32,61 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
-
-  const [products] = useState(mockProducts);
-  const [categories] = useState(mockCategories.map((category) => ({ id: category.id, name: category.name, image: category.image })));
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [categoriesResponse, productsResponse] = await Promise.all([
+          api.get('/categories'),
+          api.get('/products'),
+        ]);
+
+        const nextCategories = normalizeCategories(categoriesResponse.data);
+        const nextProducts = normalizeProducts(productsResponse.data);
+
+        setCategories(nextCategories.map((category) => ({
+          id: category.id ?? category.categoryId,
+          name: category.name ?? category.categoryName,
+          image: category.image ?? category.imageUrl ?? null,
+        })));
+
+        setProducts(nextProducts.map((product) => ({
+          id: product.id ?? product.productId ?? product._id,
+          name: product.name ?? product.productName,
+          description: product.description ?? product.productDescription,
+          price: Number(product.price ?? product.productPrice ?? 0),
+          categoryId: product.categoryId ?? product.category?.id,
+          category: product.category ?? (product.Category ? { id: product.Category.categoryId, name: product.Category.categoryName } : null),
+          isFeatured: Boolean(product.isFeatured),
+          isBestSeller: Boolean(product.isBestSeller),
+          isNewArrival: Boolean(product.isNewArrival),
+          image: product.image ?? product.imageUrl ?? null,
+        })));
+      } catch (error) {
+        console.error('Failed to load products data.', error);
+      }
+    };
+
+    loadData();
+  }, []);
 
   useEffect(() => {
     setPage(1);
   }, [search, selectedCategory, maxPrice, sortBy]);
 
-  const cat = searchParams.get('category');
-  if (cat && categories.some((c) => c.id === cat) && selectedCategory !== cat) {
-    setSelectedCategory(cat);
-  }
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat && categories.some((c) => c.id === cat) && selectedCategory !== cat) {
+      setSelectedCategory(cat);
+    }
+  }, [categories, searchParams, selectedCategory]);
 
   const filteredProducts = useMemo(() => {
     let nextProducts = products
-      .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()) || (product.description || '').toLowerCase().includes(search.toLowerCase()))
+      .filter((product) => (product.name || '').toLowerCase().includes(search.toLowerCase()) || (product.description || '').toLowerCase().includes(search.toLowerCase()))
       .filter((product) => selectedCategory === 'all' || Number(product.categoryId) === Number(selectedCategory))
       .filter((product) => Number(product.price) <= maxPrice);
 
@@ -45,7 +96,7 @@ export default function Products() {
     else nextProducts = nextProducts.sort((a, b) => a.name.localeCompare(b.name));
 
     return nextProducts;
-  }, [maxPrice, search, selectedCategory, sortBy]);
+  }, [products, maxPrice, search, selectedCategory, sortBy]);
 
   const pageCount = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const visibleProducts = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -53,7 +104,8 @@ export default function Products() {
   const { addToCart } = useCart();
   const handleAddToCart = (product, quantity) => addToCart(product, quantity);
 
-  const visibleCategories = useMemo(() => categories.slice(0, 4), [categories]);
+  // show all categories in the "Browse categories" section
+  const visibleCategories = useMemo(() => categories, [categories]);
 
   return (
     <main className="shop-page page-shell">
@@ -113,7 +165,7 @@ export default function Products() {
       </div>
 
       <section className="section-block">
-        <SectionHeader title="Browse product collections" subtitle="Explore curated products" />
+        <SectionHeader title="Browse categories" subtitle="Explore curated products" />
         <div className="category-grid">
           {visibleCategories.map((category) => (
             <CategoryCard key={category.id} category={category} />

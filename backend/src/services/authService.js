@@ -15,13 +15,13 @@ dotenv.config();
 // ─────────────────────────────────────────────
 
 const generateAccessToken = (user) => jwt.sign(
-  { id: user.userId ?? user.id, email: user.email, role: user.role },
+  { id: user.userId ?? user.id, email: user.email, phone: user.phone, role: user.role },
   process.env.JWT_ACCESS_SECRET,
   { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
 );
 
 const generateRefreshToken = (user) => jwt.sign(
-  { id: user.userId ?? user.id, email: user.email, role: user.role },
+  { id: user.userId ?? user.id, email: user.email, phone: user.phone, role: user.role },
   process.env.JWT_REFRESH_SECRET,
   { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
 );
@@ -58,19 +58,39 @@ const saveUserRecord = async (user) => {
  * 5. Return created user information
  */
 const register = async ({ fullName, email, password, phone }) => {
-  if (!fullName || !email || !password) {
+  if (!fullName || (!email && !phone) || !password) {
     throw Object.assign(new Error('All fields are required.'), { status: 400 });
   }
 
   const normalizedFullName = String(fullName).trim();
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  const normalizedPassword = String(password).trim();
+  const normalizedEmail = email
+  ? String(email).trim().toLowerCase()
+  : null;
 
-  if (!normalizedFullName || !normalizedEmail || normalizedPassword.length < 6) {
-    throw Object.assign(new Error('Please provide a valid name, email, and password.'), { status: 400 });
-  }
+const normalizedPhone = phone
+  ? String(phone).trim()
+  : null;
 
-  const existingUser = await getUserByEmail(normalizedEmail);
+const normalizedPassword = String(password).trim();
+
+ if (!normalizedFullName || normalizedPassword.length < 6) {
+  throw Object.assign(
+    new Error('Please provide a valid name and password.'),
+    { status: 400 }
+  );
+}
+
+if (normalizedEmail && normalizedEmail.length === 0) {
+  throw Object.assign(new Error('Invalid email.'), { status: 400 });
+}
+
+if (normalizedPhone && normalizedPhone.length === 0) {
+  throw Object.assign(new Error('Invalid phone number.'), { status: 400 });
+}
+
+ const existingUser = await userRepository.findUserByIdentifier(
+    normalizedEmail || normalizedPhone
+);
   if (existingUser) {
     const error = new Error('Email already registered.');
     error.status = 409;
@@ -82,7 +102,7 @@ const register = async ({ fullName, email, password, phone }) => {
   const userDocument = {
     fullName: normalizedFullName,
     email: normalizedEmail,
-    phone: null,
+    phone: phone || null,
     password: hashedPassword,
     role: 'customer',
     isVerified: false,
@@ -104,34 +124,56 @@ const register = async ({ fullName, email, password, phone }) => {
   };
 };
 
-const login = async ({ email, password }) => {
-  if (!email || !password) {
-    throw Object.assign(new Error('Email and password are required.'), { status: 400 });
+const login = async ({ identifier, password }) => {
+
+  if (!identifier || !password) {
+    throw Object.assign(
+      new Error('Email/phone and password are required.'),
+      { status: 400 }
+    );
   }
 
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const user = await getUserByEmail(normalizedEmail);
+
+  const normalizedIdentifier = String(identifier)
+      .trim()
+      .toLowerCase();
+
+
+  const user = await userRepository.findUserByIdentifier(
+      normalizedIdentifier
+  );
+
+
   if (!user) {
     const error = new Error('Invalid credentials.');
     error.status = 401;
     throw error;
   }
 
-  const isMatch = await bcrypt.compare(String(password), user.password);
+
+  const isMatch = await bcrypt.compare(
+      String(password),
+      user.password
+  );
+
+
   if (!isMatch) {
     const error = new Error('Invalid credentials.');
     error.status = 401;
     throw error;
   }
 
+
   const accessToken = generateAccessToken(user);
   const refreshToken = generateRefreshToken(user);
+
 
   await refreshTokenRepository.createToken({
     token: refreshToken,
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     userId: user.userId ?? user.id,
   });
+
 
   return {
     message: 'Login successful.',

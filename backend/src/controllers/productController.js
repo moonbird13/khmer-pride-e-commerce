@@ -109,6 +109,8 @@ const listProductsHandler = async (req, res) => {
       offset: Number(offset),
     });
 
+    // console.log(result); // <-- Add this line temporarily to test if database worked
+
     return res.json(result);
   } catch (error) {
     return res.status(500).json({ message: error.message || 'Unable to load products.' });
@@ -165,3 +167,4 @@ export {
   getNewArrivalsHandler,
   getFilterOptionsHandler,
 };
+

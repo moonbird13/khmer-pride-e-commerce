@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import Button from '../components/Button/Button.jsx';
 import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
@@ -9,9 +9,22 @@ import ReviewCard from '../components/ReviewCard/ReviewCard.jsx';
 import SectionHeader from '../components/SectionHeader';
 import ProductFilterBar from '../components/ProductFilterBar/ProductFilterBar.jsx';
 import { filterProducts } from '../utils/productFilters.mjs';
-import { categories as mockCategories } from '../data/categories';
-import { products as mockProducts } from '../data/products';
+import api from '../services/api';
 import './HomePage.css';
+
+const normalizeProducts = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.products)) return payload.products;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
+
+const normalizeCategories = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.categories)) return payload.categories;
+  if (Array.isArray(payload?.data)) return payload.data;
+  return [];
+};
 
 const reviews = [
   { author: 'Sophea', role: 'Verified buyer', comment: 'My order arrived beautifully packaged and the quality exceeded expectations.', rating: 5 },
@@ -20,18 +33,61 @@ const reviews = [
 ];
 
 export default function HomePage() {
-  const [categories] = useState(mockCategories.map((category) => ({
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [categoriesResponse, productsResponse] = await Promise.all([
+          api.get('/categories'),
+          api.get('/products'),
+        ]);
+
+        const nextCategories = normalizeCategories(categoriesResponse.data);
+        const nextProducts = normalizeProducts(productsResponse.data);
+
+        setCategories(nextCategories.map((category) => ({
+          id: category.id ?? category.categoryId,
+          name: category.name ?? category.categoryName,
+          description: category.description ?? `${category.name ?? category.categoryName} products curated for everyday living.`,
+          count: 0,
+          image: category.image ?? category.imageUrl ?? null,
+        })));
+
+        setProducts(nextProducts.map((product) => ({
+          id: product.id ?? product.productId,
+          name: product.name ?? product.productName,
+          description: product.description ?? product.productDescription,
+          price: Number(product.price ?? product.productPrice ?? 0),
+          categoryId: product.categoryId ?? product.category?.id,
+          category: product.category ?? (product.Category ? { id: product.Category.categoryId, name: product.Category.categoryName } : null),
+          isFeatured: Boolean(product.isFeatured),
+          isBestSeller: Boolean(product.isBestSeller),
+          isNewArrival: Boolean(product.isNewArrival),
+          image: product.image ?? product.imageUrl ?? null,
+        })));
+      } catch (error) {
+        console.error('Failed to load homepage data.', error);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const normalizedCategories = useMemo(() => categories.map((category) => ({
     id: category.id,
     name: category.name,
     description: `${category.name} products curated for everyday living.`,
     count: 0,
     image: category.image,
-  })));
-  const [featuredProducts] = useState(mockProducts.filter((product) => product.isFeatured).slice(0, 4));
-  const [bestSellers] = useState(mockProducts.filter((product) => product.isBestSeller).slice(0, 3));
-  const [newArrivals] = useState(mockProducts.filter((product) => product.isNewArrival).slice(0, 3));
+  })), [categories]);
 
-  const visibleCategories = useMemo(() => categories.slice(0, 4), [categories]);
+  const featuredProducts = useMemo(() => products.filter((product) => product.isFeatured).slice(0, 4), [products]);
+  const bestSellers = useMemo(() => products.filter((product) => product.isBestSeller).slice(0, 3), [products]);
+  const newArrivals = useMemo(() => products.filter((product) => product.isNewArrival).slice(0, 3), [products]);
+
+  const visibleCategories = useMemo(() => normalizedCategories.slice(0, 4), [normalizedCategories]);
   const visibleFeatured = useMemo(() => featuredProducts.slice(0, 4), [featuredProducts]);
   const visibleBestSellers = useMemo(() => bestSellers.slice(0, 3), [bestSellers]);
   const visibleNewArrivals = useMemo(() => newArrivals.slice(0, 3), [newArrivals]);
@@ -48,7 +104,7 @@ export default function HomePage() {
   const [sortValue, setSortValue] = useState('newest');
 
   const filteredProducts = useMemo(() => (
-    filterProducts(mockProducts, {
+    filterProducts(products, {
       search,
       selectedCategory,
       location: locationValue,
@@ -56,7 +112,7 @@ export default function HomePage() {
       brand: brandValue,
       sortBy: sortValue,
     })
-  ), [mockProducts, search, selectedCategory, locationValue, priceValue, brandValue, sortValue]);
+  ), [products, search, selectedCategory, locationValue, priceValue, brandValue, sortValue]);
 
   return (
     <main className="home-page">
@@ -77,8 +133,8 @@ export default function HomePage() {
       <section className="section-block">
         <SectionHeader title="Shop products" subtitle="Filter and discover products" />
         <ProductFilterBar
-          products={mockProducts}
-          categories={categories}
+          products={products}
+          categories={normalizedCategories}
           searchValue={search}
           selectedCategory={selectedCategory}
           locationValue={locationValue}
