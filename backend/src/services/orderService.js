@@ -184,3 +184,12 @@ const formatOrder = (order, items = []) => {
   };
 
 };
+
+export default{
+  formatOrder,
+  createOrder,
+  listOrders,
+  getOrder,
+  cancelOrder,
+  updateOrderStatus
+};

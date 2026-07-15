@@ -15,19 +15,19 @@ dotenv.config();
 // ─────────────────────────────────────────────
 
 const generateAccessToken = (user) => jwt.sign(
-  { id: user.userId ?? user.id, email: user.email, role: user.role },
+  { id: user.userId , email: user.email, role: user.role },
   process.env.JWT_ACCESS_SECRET,
   { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m' }
 );
 
 const generateRefreshToken = (user) => jwt.sign(
-  { id: user.userId ?? user.id, email: user.email, role: user.role },
+  { id: user.userId, email: user.email, role: user.role },
   process.env.JWT_REFRESH_SECRET,
   { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
 );
 
 const sanitizeUser = (user) => ({
-  id: user.userId ?? user.id,
+  id: user.userId,
   fullName: user.fullName,
   email: user.email,
   role: user.role,

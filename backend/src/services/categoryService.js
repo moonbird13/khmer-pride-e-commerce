@@ -1,48 +1,28 @@
-import db from '../models/index.js';
-import { mockCategories, getCategoryById as getMockCategoryById } from '../data/mockData.js';
+import categoryRepository from "../repository/category.repository.js";
 
-const { Category } = db;
 
-const createCategory = async ({ categoryName, categoryStatus = 'Active' }) => {
-  if (global.dbAvailable === false) {
-    const newCategory = {
-      categoryId: mockCategories.length + 1,
-      id: mockCategories.length + 1,
-      categoryName,
-      name: categoryName,
-      categoryStatus,
-      status: categoryStatus,
-    };
-    mockCategories.push(newCategory);
-    return {
-      id: newCategory.categoryId,
-      name: newCategory.categoryName,
-      status: newCategory.categoryStatus,
-    };
-  }
+const createCategory = async ({
+  categoryName,
+  categoryStatus = "Active",
+}) => {
 
-  const category = await Category.create({
+  const category = await categoryRepository.createCategory({
     categoryName,
     categoryStatus,
   });
 
   return {
-    id: category.categoryId,
     name: category.categoryName,
     status: category.categoryStatus,
   };
 };
 
-const listCategories = async () => {
-  if (global.dbAvailable === false) {
-    return mockCategories.map((category) => ({
-      id: category.categoryId,
-      name: category.categoryName,
-      status: category.categoryStatus,
-    }));
-  }
 
-  const categories = await Category.findAll({ order: [['categoryId', 'ASC']] });
+const listCategories = async () => {
+
+  const categories =
+    await categoryRepository.findAllCategories();
+
   return categories.map((category) => ({
     id: category.categoryId,
     name: category.categoryName,
@@ -50,19 +30,15 @@ const listCategories = async () => {
   }));
 };
 
-const getCategoryById = async (id) => {
-  if (global.dbAvailable === false) {
-    const category = getMockCategoryById(id);
-    if (!category) return null;
-    return {
-      id: category.categoryId,
-      name: category.categoryName,
-      status: category.categoryStatus,
-    };
-  }
 
-  const category = await Category.findByPk(Number(id));
-  if (!category) return null;
+const getCategoryById = async (id) => {
+
+  const category =
+    await categoryRepository.findCategoryById(Number(id));
+
+  if (!category) {
+    return null;
+  }
 
   return {
     id: category.categoryId,
@@ -71,4 +47,9 @@ const getCategoryById = async (id) => {
   };
 };
 
-export { createCategory, listCategories, getCategoryById };
+
+export {
+  createCategory,
+  listCategories,
+  getCategoryById,
+};
