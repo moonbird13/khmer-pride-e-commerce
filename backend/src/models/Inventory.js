@@ -27,7 +27,10 @@ const Inventory = sequelize.define("Inventory", {
     }
 }, {
     tableName: "Inventory",
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { fields: ['productId'] }
+    ]
 });
 
 

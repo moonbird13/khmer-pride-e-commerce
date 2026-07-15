@@ -22,7 +22,7 @@ const User = sequelize.define('User', {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   },
   phone:{
@@ -63,6 +63,7 @@ const User = sequelize.define('User', {
 }, {
   tableName: 'Users',
   timestamps: false,
+  indexes: [ { fields: ['role'] } ]
 });
 
 export default User;

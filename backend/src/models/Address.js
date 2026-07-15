@@ -37,6 +37,9 @@ const Address = sequelize.define("Address", {
 }, {
     tableName: "Address",
     timestamps: false,
+    indexes: [
+        { fields: ['userId'] }
+    ]
 });
 
 export default Address;
