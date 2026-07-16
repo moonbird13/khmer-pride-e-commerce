@@ -29,14 +29,19 @@ export const findUserByEmail = async (email) => {
 
 // Find a user by email or phone identifier.
 export const findUserByIdentifier = async (identifier) => {
+  const normalizedIdentifier = String(identifier || '').trim();
+  const emailValue = normalizedIdentifier.includes('@')
+    ? normalizeEmail(normalizedIdentifier)
+    : normalizedIdentifier;
+
   return await User.findOne({
     where: {
       [Op.or]: [
         {
-          email: identifier,
+          email: emailValue,
         },
         {
-          phone: identifier,
+          phone: normalizedIdentifier,
         },
       ],
     },
@@ -67,17 +72,6 @@ export const updateUser = async (userId, userData) => {
   return updatedRows;
 };
 
-//verify user
-export const verifyUser = async (id) => {
-  return await User.update(
-    { isVerified: true },
-    {
-      where: {
-        userId: id
-      }
-    }
-  );
-};
 // Update password
 export const updatePassword = async (userId, password) => {
   return await User.update(
@@ -111,6 +105,5 @@ export default {
   addUser,
   updateUser,
   deleteUser,
-  verifyUser,
   updatePassword
 };

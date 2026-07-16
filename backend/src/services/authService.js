@@ -30,8 +30,8 @@ const sanitizeUser = (user) => ({
   id: user.userId ?? user.id,
   fullName: user.fullName,
   email: user.email,
+  phone: user.phone,
   role: user.role,
-  isVerified: Boolean(user.isVerified),
 });
 
 const getUserByEmail = async (email) => {
@@ -98,46 +98,49 @@ if (normalizedPhone && normalizedPhone.length === 0) {
   }
 
   const hashedPassword = await bcrypt.hash(normalizedPassword, 10);
-  const verificationToken = jwt.sign({ email: normalizedEmail }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1d' });
+  const verificationToken = normalizedEmail
+    ? jwt.sign({ email: normalizedEmail }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1d' })
+    : null;
   const userDocument = {
     fullName: normalizedFullName,
     email: normalizedEmail,
-    phone: phone || null,
+    phone: normalizedPhone,
     password: hashedPassword,
     role: 'customer',
-    isVerified: false,
-    verificationToken,
   };
 
   const user = await saveUserRecord(userDocument);
 
-  await emailVerificationTokenRepository.createToken({
-    token: verificationToken,
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-    userId: user.userId ?? user.id,
-  });
+  if (verificationToken) {
+    await emailVerificationTokenRepository.createToken({
+      token: verificationToken,
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      userId: user.userId ?? user.id,
+    });
+  }
 
   return {
-    message: 'Registration successful. Please verify your email.',
+    message: normalizedEmail
+      ? 'Registration successful. Please verify your email.'
+      : 'Registration successful. You can log in with your phone number.',
     verificationToken,
     user: sanitizeUser(user),
   };
 };
 
-const login = async ({ identifier, password }) => {
+const login = async ({ identifier, email, phone, password }) => {
+  const loginIdentifier = identifier || email || phone;
 
-  if (!identifier || !password) {
+  if (!loginIdentifier || !password) {
     throw Object.assign(
       new Error('Email/phone and password are required.'),
       { status: 400 }
     );
   }
 
-
-  const normalizedIdentifier = String(identifier)
+  const normalizedIdentifier = String(loginIdentifier)
       .trim()
       .toLowerCase();
-
 
   const user = await userRepository.findUserByIdentifier(
       normalizedIdentifier
@@ -243,7 +246,6 @@ const verifyEmail = async ({ token }) => {
     throw error;
   }
 
-  await userRepository.verifyUser(user.userId ?? user.id);
   await emailVerificationTokenRepository.markAsUsed(verificationTokenRecord.verificationTokenId ?? verificationTokenRecord.id);
 
   return { message: 'Email verified successfully.' };

@@ -18,6 +18,12 @@ const registerValidation = (req, res, next) => {
   });
 }
 
+  if (!email && !phone) {
+    return res.status(400).json({
+      message: 'Email or phone number is required.'
+    });
+  }
+
 
   if (email && !emailRegex.test(email)) {
     return res.status(400).json({

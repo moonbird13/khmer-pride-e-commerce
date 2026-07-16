@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import db from '../src/models/index.js';
 
 process.env.JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'test-access-secret';
 process.env.JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'test-refresh-secret';
@@ -7,6 +8,10 @@ process.env.JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
 process.env.JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 const { register, login, refreshAccessToken, verifyEmail, forgotPassword, resetPassword, changePassword } = await import('../src/services/authService.js');
+
+test.before(async () => {
+  await db.sequelize.sync({ alter: true });
+});
 
 const resetTestState = () => {
   // No-op placeholder: tests use repository/database implementations only.
