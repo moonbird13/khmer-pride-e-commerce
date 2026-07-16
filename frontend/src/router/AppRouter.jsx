@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 // Pages
@@ -19,7 +19,22 @@ import AboutPage from '../pages/AboutPage';
 import ContactPage from '../pages/ContactPage';
 import OrderSuccessPage from '../pages/OrderSuccessPage';
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, requiredRole = [] }) {
+  const location = useLocation();
+  const { user, token, loading } = useAuth();
+
+  if (loading) {
+    return null;
+  }
+
+  if (!token || !user) {
+    return <Navigate to="/login" replace state={{ from: location }} />;
+  }
+
+  if (requiredRole.length > 0 && !requiredRole.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 }
 
@@ -83,7 +98,7 @@ export default function AppRouter() {
         }
       />
       <Route
-        path="/staff-dashboard"
+        path="/staff-portal"
         element={
           <ProtectedRoute requiredRole={['admin', 'staff']}>
             <StaffDashboardPage />

@@ -1,29 +1,42 @@
 .home-page {
   display: grid;
-  gap: 3rem;
-  width: min(1180px, calc(100% - 2rem));
+  gap: 2rem;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem 0 4rem;
+  padding: 1rem clamp(1.5rem, 4vw, 3rem) 3.5rem;
 }
 
 .hero-section {
   position: relative;
-  padding: clamp(2.5rem, 4vw, 4rem);
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(240px, 0.9fr);
+  gap: clamp(1.25rem, 3vw, 2.5rem);
+  align-items: stretch;
+  padding: 0;
   border-radius: 2rem;
-  background: linear-gradient(135deg, #f7efe7 0%, #fff8ef 55%, #f3efe7 100%);
+  background: linear-gradient(135deg, #7f543a 0%, #ac7b57 45%, #d4a17e 100%);
   box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+}
+
+.hero-section__content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2.25rem, 4vw, 3.5rem);
+  color: #ffffff;
 }
 
 .hero-section h1 {
-  max-width: 24rem;
+  max-width: 28rem;
   margin: 0.5rem 0 1rem;
-  font-size: clamp(2.5rem, 4vw, 3.75rem);
+  font-size: clamp(2.15rem, 3.7vw, 3.6rem);
   line-height: 1.02;
 }
 
 .hero-section .hero-copy {
-  max-width: 40rem;
-  color: #4b5563;
+  max-width: 38rem;
+  color: rgba(255, 255, 255, 0.84);
   margin: 0;
   font-size: 1rem;
   line-height: 1.75;
@@ -33,17 +46,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  margin-top: 2rem;
-}
-
-.hero-badge {
-  display: inline-flex;
-  margin-top: 1.75rem;
-  padding: 0.8rem 1.25rem;
-  border-radius: 999px;
-  background: rgba(15, 81, 50, 0.12);
-  color: #0f5132;
-  font-weight: 600;
+  margin-top: 1.5rem;
 }
 
 .section-block {
@@ -59,15 +62,15 @@
 }
 
 .category-grid {
-  grid-template-columns: repeat(4, minmax(16rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
 }
 
 .product-grid {
-  grid-template-columns: repeat(3, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
 .review-grid {
-  grid-template-columns: repeat(3, minmax(18rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
 }
 
 .promotion-banner {
@@ -75,10 +78,35 @@
   grid-template-columns: 1.5fr 1fr;
   gap: 2rem;
   align-items: center;
-  padding: 2.5rem;
+  padding: clamp(1.75rem, 3vw, 2.5rem);
   border-radius: 2rem;
-  background: linear-gradient(90deg, #ffecdc 0%, #fff7f0 100%);
+  background: linear-gradient(90deg, #fffbf2 0%, #fff4dc 100%);
   box-shadow: 0 25px 60px rgba(15, 23, 42, 0.08);
+}
+
+.hero-section__media {
+  min-height: 100%;
+  position: relative;
+}
+
+.hero-visual {
+  height: 100%;
+  min-height: 330px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    linear-gradient(135deg, rgba(0, 0, 0, 0.08), rgba(255, 255, 255, 0.1));
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hero-cta.ui-btn--secondary {
+  background: #ffffff;
+  color: #111111;
+  border-color: #ffffff;
+  box-shadow: 0 16px 30px rgba(15, 23, 42, 0.14);
+}
+
+.hero-cta.ui-btn--secondary:hover {
+  background: #fff8ea;
 }
 
 .promotion-banner h2 {
@@ -94,7 +122,7 @@
 }
 
 .eyebrow {
-  color: #0f5132;
+  color: #f2a93b;
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -121,6 +149,16 @@
 }
 
 @media (max-width: 1024px) {
+  .hero-section {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-visual {
+    min-height: 220px;
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
   .category-grid,
   .product-grid,
   .review-grid {
@@ -135,19 +173,19 @@
 @media (max-width: 720px) {
   .home-page {
     gap: 2rem;
-    padding: 1.5rem 0 3rem;
-  }
-
-  .hero-section {
-    padding: 2rem 1.25rem;
+    padding: 1.25rem 1rem 3rem;
   }
 
   .hero-section h1 {
-    font-size: 2.25rem;
+    font-size: 2.2rem;
   }
 
   .hero-actions {
     justify-content: stretch;
+  }
+
+  .hero-cta {
+    width: 100%;
   }
 
   .section-header {

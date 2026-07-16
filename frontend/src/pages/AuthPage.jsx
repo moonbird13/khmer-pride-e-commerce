@@ -19,18 +19,34 @@ export default function AuthPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleAuthSubmit = async ({ email: authEmail, password: authPassword, fullName }) => {
+  const handleAuthSubmit = async ({ fullName, identifier, identifierType, password: authPassword }) => {
     setLoading(true);
     setMessage('');
     try {
       if (mode === 'register') {
-        await register(fullName, authEmail, authPassword);
+        await register({
+          fullName,
+          email: identifierType === 'email' ? identifier : '',
+          phone: identifierType === 'phone' ? identifier : '',
+          password: authPassword,
+        });
         setMessage('Registration successful. Please log in with your new account.');
         setTimeout(() => navigate('/login'), 1500);
       } else {
-        await login(authEmail, authPassword);
+        const result = await login(identifier, authPassword);
+        const role = result?.user?.role;
         setMessage('Login successful.');
-        setTimeout(() => navigate('/'), 1500);
+        setTimeout(() => {
+          if (role === 'admin') {
+            navigate('/admin-dashboard');
+            return;
+          }
+          if (role === 'staff') {
+            navigate('/staff-portal');
+            return;
+          }
+          navigate('/');
+        }, 1500);
       }
     } catch (error) {
       const errorMessage = error?.response?.data?.message || error?.message || 'Authentication failed.';

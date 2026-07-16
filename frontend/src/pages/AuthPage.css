@@ -43,22 +43,22 @@
 .auth-panel__status {
   padding: 12px 14px;
   border-radius: 12px;
-  background: #fdf2e7;
-  color: #8c4311;
+  background: #fffbf2;
+  color: #f2a93b;
 }
 
 .auth-link-row {
   display: flex;
   gap: 10px;
-  flex-wrap: wrap;
-}
+  background: linear-gradient(135deg, #fffbf2 0%, #ffe8bf 100%);
+  border: 1px solid #f2e0c7;
 
 .auth-form-grid {
   display: grid;
   gap: 12px;
 }
-
-@media (max-width: 800px) {
+  background: #fffbf2;
+  color: #f2a93b;
   .auth-shell {
     grid-template-columns: 1fr;
   }

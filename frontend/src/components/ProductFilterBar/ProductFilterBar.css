@@ -2,7 +2,7 @@
   border: 1px solid #f2e0c9;
   border-radius: 1.25rem;
   padding: 1rem 1.1rem;
-  background: #fffaf4;
+  background: #fffbf2;
   box-shadow: 0 18px 40px rgba(89, 54, 20, 0.08);
   margin: 0 0 1.2rem;
 }
@@ -36,7 +36,7 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.85rem;
-}
+  background: #fffbf2;
 
 .product-filter-bar__field {
   display: flex;
@@ -46,12 +46,12 @@
 
 .product-filter-bar__label {
   font-size: 0.7rem;
-  font-weight: 700;
+  color: #f2a93b;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #8b5e3c;
 }
-
+  color: #a86400;
 .product-filter-bar__select {
   appearance: none;
   border: 1px solid #f2e0c9;
