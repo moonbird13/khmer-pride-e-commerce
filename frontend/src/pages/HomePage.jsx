@@ -7,8 +7,6 @@ import Newsletter from '../components/Newsletter/Newsletter.jsx';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import ReviewCard from '../components/ReviewCard/ReviewCard.jsx';
 import SectionHeader from '../components/SectionHeader';
-import ProductFilterBar from '../components/ProductFilterBar/ProductFilterBar.jsx';
-import { filterProducts } from '../utils/productFilters.mjs';
 import api from '../services/api';
 import './HomePage.css';
 
@@ -95,67 +93,20 @@ export default function HomePage() {
   const { addToCart } = useCart();
   const handleAddToCart = (product, quantity) => addToCart(product, quantity);
 
-  // Product filter state (homepage-only filter bar)
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [locationValue, setLocationValue] = useState('all');
-  const [priceValue, setPriceValue] = useState('all');
-  const [brandValue, setBrandValue] = useState('all');
-  const [sortValue, setSortValue] = useState('newest');
-
-  const filteredProducts = useMemo(() => (
-    filterProducts(products, {
-      search,
-      selectedCategory,
-      location: locationValue,
-      priceRange: priceValue,
-      brand: brandValue,
-      sortBy: sortValue,
-    })
-  ), [products, search, selectedCategory, locationValue, priceValue, brandValue, sortValue]);
-
   return (
     <main className="home-page">
       <Hero
-        eyebrow="Authentic Cambodian living"
+        eyebrow="Made in Cambodia"
         title="Everyday goods, made with Khmer pride."
-        description="Browse curated product collections, discover featured products, and support local makers with every purchase."
+        description=""
         actions={(
           <div className="hero-actions">
-            <Button to="/products">Explore now</Button>
-            <Button to="/register" variant="secondary">Create account</Button>
+            <Button to="/products" variant="secondary" className="hero-cta">Shop the collection</Button>
           </div>
         )}
+        media={<div className="hero-visual" aria-hidden="true" />}
       >
-        <div className="hero-badge">Free shipping on orders over $60</div>
       </Hero>
-
-      <section className="section-block">
-        <SectionHeader title="Shop products" subtitle="Filter and discover products" />
-        <ProductFilterBar
-          products={products}
-          categories={normalizedCategories}
-          searchValue={search}
-          selectedCategory={selectedCategory}
-          locationValue={locationValue}
-          priceValue={priceValue}
-          brandValue={brandValue}
-          sortValue={sortValue}
-          onSearchChange={(value) => setSearch(value)}
-          onCategoryChange={(value) => setSelectedCategory(value)}
-          onLocationChange={(value) => setLocationValue(value)}
-          onPriceChange={(value) => setPriceValue(value)}
-          onBrandChange={(value) => setBrandValue(value)}
-          onSortChange={(value) => setSortValue(value)}
-          countLabel={`${filteredProducts.length} products`}
-        />
-
-        <div className="product-grid">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
-          ))}
-        </div>
-      </section>
 
       <section className="section-block">
         <SectionHeader title="Browse product collections" subtitle="Explore curated products" />

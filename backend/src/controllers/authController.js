@@ -118,7 +118,6 @@ const profile = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
-      isVerified: Boolean(user.isVerified),
     };
 
     return res.status(200).json(result);

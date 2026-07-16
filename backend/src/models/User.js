@@ -22,7 +22,7 @@ const User = sequelize.define('User', {
   },
   email: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
     unique: true,
   },
   phone:{
@@ -50,10 +50,6 @@ const User = sequelize.define('User', {
      ),
      defaultValue: 'Active',
      field: "user_status",
-  },
-  isVerified: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
   },
   createAt: {
     type: DataTypes.DATEONLY,

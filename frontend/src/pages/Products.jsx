@@ -27,14 +27,14 @@ const normalizeCategories = (payload) => {
 };
 
 export default function Products() {
-  const [search, setSearch] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [searchParams, setSearchParams] = useSearchParams();
 
   useEffect(() => {
     const loadData = async () => {

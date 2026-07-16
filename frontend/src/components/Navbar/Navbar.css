@@ -1,20 +1,27 @@
 .site-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1rem 1.25rem;
-  background-color: #ffffff;
-  border-bottom: 1px solid #e3e3e3;
+  display: grid;
+  gap: 0;
+  background: linear-gradient(180deg, #fffaf2 0%, #fff5e2 100%);
+  border-bottom: 1px solid #eeddbf;
+  box-shadow: 0 10px 28px rgba(102, 59, 13, 0.06);
   position: sticky;
   top: 0;
   z-index: 20;
 }
 
-.navbar-brand-wrap {
+.navbar-top {
+  width: 100%;
+  background: transparent;
+}
+
+.navbar-inner {
   display: flex;
   align-items: center;
-  min-width: 0;
+  justify-content: space-between;
+  gap: 1rem;
+  width: min(1240px, calc(100% - 6rem));
+  margin: 0 auto;
+  padding: 1rem 0;
 }
 
 .navbar-brand {
@@ -23,48 +30,70 @@
   gap: 0.8rem;
   text-decoration: none;
   color: #111111;
+  flex-shrink: 0;
 }
 
 .brand-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 0.85rem;
-  background-color: #f1f6f4;
-  color: #0f5132;
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f7bf5f 0%, #ef9e2d 100%);
+  box-shadow: 0 8px 18px rgba(239, 158, 45, 0.22);
+  color: #111111;
   font-weight: 700;
   font-size: 1.1rem;
 }
 
 .brand-copy {
   display: grid;
-  gap: 0.2rem;
   line-height: 1.1;
 }
 
 .brand-copy strong {
   display: block;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  font-weight: 800;
 }
 
 .brand-copy small {
-  display: block;
-  color: #5f5f6c;
-  font-size: 0.8rem;
+  display: none;
+}
+
+.navbar-links {
+  width: 100%;
+  background: linear-gradient(180deg, #f0a83b 0%, #e69525 100%);
+}
+
+.navbar-menu-inner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: min(1240px, calc(100% - 6rem));
+  margin: 0 auto;
+  min-height: 3.25rem;
+}
+
+.navbar-menu-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
 }
 
 .navbar-toggle {
   display: none;
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.4rem;
+  height: 2.4rem;
   border: none;
   background: transparent;
   cursor: pointer;
   flex-direction: column;
   justify-content: space-between;
-  padding: 0.2rem;
+  padding: 0.25rem 0;
+  flex-shrink: 0;
 }
 
 .navbar-toggle span {
@@ -75,28 +104,50 @@
   border-radius: 2rem;
 }
 
-.navbar-links {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
 .navbar-link {
-  color: #2c2c35;
+  display: inline-flex;
+  align-items: center;
+  color: #ffffff;
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s ease;
+  font-weight: 700;
+  padding: 0.42rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-link:hover,
 .navbar-link.active {
-  color: #0f5132;
+  opacity: 1;
+}
+
+.navbar-link.active {
+  background: rgba(229, 134, 41, 0.88);
+  border-color: rgba(255, 255, 255, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 8px 16px rgba(122, 63, 8, 0.18);
+  padding-inline: 0.9rem;
+  transform: translateY(-1px);
 }
 
 .navbar-actions {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.7rem;
+  flex-shrink: 0;
+}
+
+.navbar-search {
+  flex: 1 1 38rem;
+  max-width: 42rem;
+}
+
+.navbar-search .ui-search {
+  width: 100%;
+  max-width: none;
+  background: #ffffff;
+  border: 1px solid #ead8b8;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
+  border-radius: 999px;
 }
 
 .navbar-action-button,
@@ -106,44 +157,65 @@
   justify-content: center;
   border: 1px solid transparent;
   border-radius: 999px;
-  padding: 0.75rem 1rem;
+  padding: 0.68rem 1rem;
   font-size: 0.95rem;
   text-decoration: none;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .navbar-action-button {
-  background: #f9fafb;
+  background: #ffffff;
   color: #2c2c35;
   min-width: 2.75rem;
   min-height: 2.75rem;
   border-radius: 50%;
+  border-color: #ead8b8;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
 }
 
 .navbar-action-button:hover,
 .navbar-pill:hover {
-  background-color: #eff6f2;
+  background-color: #fff2cf;
+  transform: translateY(-1px);
 }
 
 .navbar-pill {
-  background: #ffffff;
-  border-color: #d8d8e2;
-  color: #111111;
+  background: #1b1b1f;
+  border-color: #1b1b1f;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(17, 17, 17, 0.12);
 }
 
 .navbar-pill--primary {
-  background: #0f5132;
+  background: linear-gradient(180deg, #202026 0%, #111114 100%);
   color: #ffffff;
-  border-color: #0f5132;
+  border-color: #111114;
 }
 
 .navbar-pill--secondary {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.8);
   color: #111111;
 }
 
+.navbar-cart-count {
+  margin-left: 0.25rem;
+  font-size: 0.75rem;
+}
+
 @media (max-width: 900px) {
+  .navbar-inner {
+    width: calc(100% - 1.5rem);
+    flex-wrap: wrap;
+  }
+
+  .navbar-search {
+    order: 3;
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
   .navbar-toggle {
     display: flex;
   }
@@ -153,11 +225,6 @@
     top: 100%;
     left: 0;
     right: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-    background: #ffffff;
-    border-bottom: 1px solid #e3e3e3;
     overflow: hidden;
     max-height: 0;
     transition: max-height 0.25s ease;
@@ -165,11 +232,28 @@
 
   .navbar-links.open {
     max-height: 18rem;
+    background: linear-gradient(180deg, #f0a83b 0%, #e69525 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  }
+
+  .navbar-menu-inner {
+    width: 100%;
+    padding: 0.75rem 1rem 1rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .navbar-menu-links {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
   }
 
   .navbar-link {
-    padding: 1rem 1.25rem;
-    border-top: 1px solid #f2f2f4;
+    padding: 0.9rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 0;
+    justify-content: flex-start;
   }
 
   .navbar-actions {
@@ -178,18 +262,16 @@
 }
 
 @media (max-width: 680px) {
-  .site-navbar {
-    flex-wrap: wrap;
-    padding: 0.85rem 1rem;
-  }
-
-  .navbar-brand-wrap,
-  .navbar-actions {
-    width: 100%;
+  .navbar-inner {
+    gap: 0.75rem;
   }
 
   .navbar-actions {
     justify-content: flex-end;
-    order: 3;
+    flex-wrap: wrap;
+  }
+
+  .navbar-pill {
+    padding-inline: 0.95rem;
   }
 }

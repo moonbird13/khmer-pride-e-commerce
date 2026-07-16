@@ -36,13 +36,13 @@ const getProductById = async (id) => {
   return data;
 };
 
-const login = async (email, password) => {
-  const { data } = await api.post('/auth/login', { email, password });
+const login = async (identifier, password) => {
+  const { data } = await api.post('/auth/login', { identifier, password });
   return data;
 };
 
-const register = async (fullName, email, password) => {
-  const { data } = await api.post('/auth/register', { fullName, email, password });
+const register = async ({ fullName, email, phone, password }) => {
+  const { data } = await api.post('/auth/register', { fullName, email, phone, password });
   return data;
 };
 
