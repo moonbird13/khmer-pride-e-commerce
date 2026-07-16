@@ -45,7 +45,10 @@ const EmailVerificationToken = sequelize.define('EmailVerificationToken', {
 
 }, {
     tableName: 'Email_Verification_Tokens',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { unique: true, fields: ['userId'] }
+    ]
 });
 
 

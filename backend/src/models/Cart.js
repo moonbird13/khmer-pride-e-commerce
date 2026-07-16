@@ -29,7 +29,10 @@ const Cart = sequelize.define('Cart', {
 }
 , {
     tableName: 'Cart',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { fields: ['userId'] }
+    ]
 });
 
 export default Cart;

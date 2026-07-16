@@ -12,6 +12,7 @@ const Category = sequelize.define("Category", {
     categoryName: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
         field: "category_name",
     },
     categoryStatus: {
@@ -25,7 +26,11 @@ const Category = sequelize.define("Category", {
     }
 }, {
     tableName: "Category",
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        {fields: ['categoryStatus']}
+    ]
+
 });
 
 export default Category;

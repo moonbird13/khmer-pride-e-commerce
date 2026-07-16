@@ -50,7 +50,10 @@ const RefreshToken = sequelize.define('RefreshToken', {
 
 }, {
     tableName: 'Refresh_Tokens',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { unique: true, fields: ['userId'] }
+    ]
 });
 
 
