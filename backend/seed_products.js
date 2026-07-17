@@ -147,9 +147,11 @@ const run = async () => {
           isNewArrival: false,
           salesCount: 0,
           createAt: new Date(),
-          imageUrl: null,
-          publicId: null,
-          quantity: randQty(),
+        });
+        await db.Inventory.create({
+          productId: product.productId,
+          stockQuantity: randQty(),
+          lastUpdated: new Date(),
         });
 
         created++;

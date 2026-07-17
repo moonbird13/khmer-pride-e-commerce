@@ -11,8 +11,11 @@ import {
  updateProduct as updateProductRepo,
  deleteProduct as deleteProductRepo
 } from "../repositories/product.repository.js";
+import db from '../models/index.js';
 
 
+
+const { Product_Image, Inventory } = db;
 
 const formatProduct = (product)=>({
 
@@ -32,9 +35,9 @@ const formatProduct = (product)=>({
     isBestSeller:Boolean(product.isBestSeller),
     isNewArrival:Boolean(product.isNewArrival),
     salesCount:Number(product.salesCount || 0),
-    imageUrl:product.imageUrl || null,
-    publicId:product.publicId || null,
-    quantity:Number(product.quantity || 0),
+    imageUrl:product.Product_Images?.[0]?.imageUrl || null,
+    publicId:product.Product_Images?.[0]?.publicId || null,
+    quantity:Number(product.Inventory?.stockQuantity || 0),
     createdAt:product.createAt
 
 });
@@ -56,8 +59,27 @@ export const createProduct = async(data)=>{
     // ensure createAt is set to satisfy model not-null constraint
     if (!data.createAt) data.createAt = new Date();
 
-    const product =await createProductRepo(data);
-    return formatProduct(product);
+    const { imageUrl, publicId, quantity, ...productData } = data;
+    const product = await createProductRepo(productData);
+
+    if (typeof quantity !== 'undefined') {
+      await Inventory.create({
+        productId: product.productId,
+        stockQuantity: Number(quantity) || 0,
+        lastUpdated: new Date(),
+      });
+    }
+
+    if (imageUrl) {
+      await Product_Image.create({
+        productId: product.productId,
+        imageUrl,
+        publicId: publicId || null,
+        isPrimary: true,
+      });
+    }
+
+    return formatProduct(await findProductById(product.productId));
 
 };
 
@@ -125,10 +147,40 @@ export const updateProduct = async(id, data)=>{
         throw new Error("Product price must be greater than zero");
     }
 
-    const product = await updateProductRepo(id, data);
+    const { imageUrl, publicId, quantity, ...productData } = data;
+    const product = await updateProductRepo(id, productData);
     if(!product) return null;
 
-    return formatProduct(product);
+    if (typeof quantity !== 'undefined') {
+      const inventory = await Inventory.findOne({ where: { productId: product.productId } });
+      if (inventory) {
+        await inventory.update({
+          stockQuantity: Number(quantity) || 0,
+          lastUpdated: new Date(),
+        });
+      } else {
+        await Inventory.create({
+          productId: product.productId,
+          stockQuantity: Number(quantity) || 0,
+          lastUpdated: new Date(),
+        });
+      }
+    }
+
+    if (imageUrl) {
+      await Product_Image.update(
+        { isPrimary: false },
+        { where: { productId: product.productId, isPrimary: true } }
+      );
+      await Product_Image.create({
+        productId: product.productId,
+        imageUrl,
+        publicId: publicId || null,
+        isPrimary: true,
+      });
+    }
+
+    return formatProduct(await findProductById(product.productId));
 };
 
 // Delete product

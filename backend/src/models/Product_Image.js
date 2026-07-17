@@ -19,6 +19,11 @@ const Product_Image = sequelize.define("Product_Image", {
         allowNull: false,
         field: "image_url"
     },
+    publicId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "public_id"
+    },
     isPrimary: {
         type: DataTypes.BOOLEAN,
         allowNull: true,

@@ -7,7 +7,7 @@
 import { Op } from 'sequelize';
 import db from '../models/index.js';
 
-const { Product, Category } = db;
+const { Product, Category, Product_Image, Inventory } = db;
 
 /**
  * Build Sequelize where clause based on filter parameters
@@ -93,7 +93,11 @@ export const getFilteredProducts = async (filters = {}, pagination = {}) => {
 
     const { count, rows } = await Product.findAndCountAll({
       where: whereClause,
-      include: [{ model: Category, attributes: ['categoryId', 'categoryName'] }],
+      include: [
+        { model: Category, attributes: ['categoryId', 'categoryName'] },
+        { model: Product_Image, where: { isPrimary: true }, required: false, attributes: ['imageUrl', 'publicId'] },
+        { model: Inventory, required: false, attributes: ['stockQuantity'] },
+      ],
       order: orderClause,
       limit: Number(limit),
       offset: Number(offset),
@@ -128,9 +132,9 @@ const toProductPayload = (product) => ({
   isBestSeller: Boolean(product.isBestSeller),
   isNewArrival: Boolean(product.isNewArrival),
   salesCount: Number(product.salesCount || 0),
-  imageUrl: product.imageUrl || null,
-  publicId: product.publicId || null,
-  quantity: Number(product.quantity || 0),
+  imageUrl: product.Product_Images?.[0]?.imageUrl || null,
+  publicId: product.Product_Images?.[0]?.publicId || null,
+  quantity: Number(product.Inventory?.stockQuantity || 0),
   createdAt: product.createAt,
 });
 

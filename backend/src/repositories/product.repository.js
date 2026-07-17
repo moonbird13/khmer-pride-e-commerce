@@ -1,7 +1,25 @@
 import { Op } from "sequelize";
 import db from "../models/index.js";
 
-const { Product, Category } = db;
+const { Product, Category, Product_Image, Inventory } = db;
+
+const commonIncludes = [
+  {
+    model: Category,
+    attributes: ["categoryId", "categoryName"],
+  },
+  {
+    model: Product_Image,
+    where: { isPrimary: true },
+    required: false,
+    attributes: ["imageUrl", "publicId"],
+  },
+  {
+    model: Inventory,
+    required: false,
+    attributes: ["stockQuantity"],
+  },
+];
 
 
 // Create
@@ -18,15 +36,7 @@ export const findAllProducts = async()=>{
 
     return await Product.findAll({
 
-        include:[
-            {
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-            }
-        ],
+        include: commonIncludes,
 
         order:[
             ["productId","ASC"]
@@ -44,15 +54,7 @@ export const findProductById = async(id)=>{
     return await Product.findByPk(
         Number(id),
         {
-            include:[
-                {
-                    model:Category,
-                    attributes:[
-                        "categoryId",
-                        "categoryName"
-                    ]
-                }
-            ]
+            include: commonIncludes
         }
     );
 
@@ -80,13 +82,7 @@ export const searchProduct = async(query)=>{
             ]
         },
 
-        include:[{
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-         }]
+        include: commonIncludes
 
     });
 
@@ -100,13 +96,7 @@ export const findProductsByCategory = async(categoryId)=>{
 
     return await Product.findAll({
         where:{ categoryId:Number(categoryId)},
-        include:[{
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-        }]
+        include: commonIncludes
 
     });
 
@@ -121,13 +111,7 @@ export const findFeaturedProducts = async()=>{
     return await Product.findAll({
 
         where:{ isFeatured:true },
-        include:[{
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-            }],
+        include: commonIncludes,
         limit:6,
         order:[
             ["productId","ASC"]
@@ -145,15 +129,7 @@ export const findNewProducts = async()=>{
 
     return await Product.findAll({
 
-        include:[
-            {
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-            }
-        ],
+        include: commonIncludes,
 
         order:[
             ["createAt","DESC"]
@@ -173,15 +149,7 @@ export const findBestSellerProducts = async()=>{
 
     return await Product.findAll({
 
-        include:[
-            {
-                model:Category,
-                attributes:[
-                    "categoryId",
-                    "categoryName"
-                ]
-            }
-        ],
+        include: commonIncludes,
 
         order:[
             ["salesCount","DESC"]
