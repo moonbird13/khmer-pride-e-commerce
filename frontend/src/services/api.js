@@ -96,6 +96,30 @@ const getOrders = async () => {
   return Array.isArray(data) ? data : data.orders || [];
 };
 
+// --------------------------------------
+// Favorite
+//---------------------------------------
+// Get all favorite products
+const getFavorites = async () => {
+  const { data } = await api.get(`/favorites`);
+  return Array.isArray(data) ? data : data.data || [];
+};
+
+// Add product to favorite
+const addFavorite = async (productId) => {
+  const { data } = await api.post(`/favorites/`, {
+    productId,
+  });
+
+  return data;
+};
+
+// Remove product from favorite
+const removeFavorite = async (productId) => {
+  const { data } = await api.delete(`/favorites/${productId}`);
+  return data;
+};
+
 export {
   api,
   setAuthToken,
@@ -114,6 +138,9 @@ export {
   clearCart,
   createOrder,
   getOrders,
+  getFavorites,
+  addFavorite,
+  removeFavorite,
 };
 
 export default api;
