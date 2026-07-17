@@ -28,6 +28,13 @@ frontend/.env
 **/dist/
 **/build/
 
+# Postman environment files
+postman/environments/
+postman/environments/*.yaml
+postman/environments/*.yml
+postman/environments/*.json
+postman/*.env
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
