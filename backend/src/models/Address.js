@@ -1,4 +1,4 @@
-import{DataTypes} from "sequelize";
+ximport{DataTypes} from "sequelize";
 import sequelize from "../config/database.js";
 
 const Address = sequelize.define("Address", {

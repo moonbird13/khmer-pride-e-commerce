@@ -18,6 +18,8 @@ export default function Products() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('newest');
+  const [selectedRating, setSelectedRating] = useState(0);
+  const [inStockOnly, setInStockOnly] = useState(false);
   const [page, setPage] = useState(1);
 
   const [products] = useState(mockProducts);
@@ -26,26 +28,30 @@ export default function Products() {
 
   useEffect(() => {
     setPage(1);
-  }, [search, selectedCategory, maxPrice, sortBy]);
+  }, [search, selectedCategory, maxPrice, sortBy, selectedRating, inStockOnly]);
 
   const cat = searchParams.get('category');
-  if (cat && categories.some((c) => c.id === cat) && selectedCategory !== cat) {
-    setSelectedCategory(cat);
-  }
+  useEffect(() => {
+    if (cat && categories.some((c) => String(c.id) === cat) && String(selectedCategory) !== cat) {
+      setSelectedCategory(cat);
+    }
+  }, [cat, categories, selectedCategory]);
 
   const filteredProducts = useMemo(() => {
     let nextProducts = products
       .filter((product) => product.name.toLowerCase().includes(search.toLowerCase()) || (product.description || '').toLowerCase().includes(search.toLowerCase()))
       .filter((product) => selectedCategory === 'all' || Number(product.categoryId) === Number(selectedCategory))
-      .filter((product) => Number(product.price) <= maxPrice);
+      .filter((product) => Number(product.price) <= maxPrice)
+      .filter((product) => selectedRating === 0 || (product.rating && Number(product.rating) >= selectedRating))
+      .filter((product) => !inStockOnly || Number(product.stock) > 0);
 
-    if (sortBy === 'price-low') nextProducts = nextProducts.sort((a, b) => a.price - b.price);
-    else if (sortBy === 'price-high') nextProducts = nextProducts.sort((a, b) => b.price - a.price);
-    else if (sortBy === 'newest') nextProducts = [...nextProducts]; // keep defined order as "newest"
-    else nextProducts = nextProducts.sort((a, b) => a.name.localeCompare(b.name));
+    if (sortBy === 'price-low') nextProducts = [...nextProducts].sort((a, b) => a.price - b.price);
+    else if (sortBy === 'price-high') nextProducts = [...nextProducts].sort((a, b) => b.price - a.price);
+    else if (sortBy === 'a-z') nextProducts = [...nextProducts].sort((a, b) => a.name.localeCompare(b.name));
+    else nextProducts = [...nextProducts];
 
     return nextProducts;
-  }, [maxPrice, search, selectedCategory, sortBy]);
+  }, [maxPrice, search, selectedCategory, sortBy, selectedRating, inStockOnly, products]);
 
   const pageCount = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE));
   const visibleProducts = filteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -57,8 +63,8 @@ export default function Products() {
 
   return (
     <main className="shop-page page-shell">
-      <section className="hero-section">
-        <p className="eyebrow">{selectedCategory === 'all' ? 'Products' : (categories.find((c) => c.id === selectedCategory)?.name || 'Products')}</p>
+      <section className="hero-section hero-section--solid">
+        <p className="eyebrow">{selectedCategory === 'all' ? 'Products' : (categories.find((c) => String(c.id) === String(selectedCategory))?.name || 'Products')}</p>
         <h1>Browse handcrafted finds from Khmer Pride.</h1>
         <p className="hero-copy">Search by style, filter products by type, and find pieces that fit your routine.</p>
       </section>
@@ -69,29 +75,37 @@ export default function Products() {
           selectedCategory={selectedCategory}
           onSelectCategory={(categoryId) => {
             setSelectedCategory(categoryId);
+            const params = new URLSearchParams(searchParams);
             if (categoryId === 'all') {
-              searchParams.delete('category');
-              setSearchParams(searchParams);
+              params.delete('category');
             } else {
-              setSearchParams({ ...Object.fromEntries(searchParams), category: String(categoryId) });
+              params.set('category', String(categoryId));
             }
+            setSearchParams(params);
           }}
           maxPrice={maxPrice}
           onPriceChange={setMaxPrice}
           searchValue={search}
           onSearchChange={setSearch}
+          selectedRating={selectedRating}
+          onSelectRating={setSelectedRating}
+          inStockOnly={inStockOnly}
+          onToggleAvailability={setInStockOnly}
         />
 
         <section className="shop-page__content">
-
-          <div className="shop-page__toolbar">
-            <span className="shop-page__count">{filteredProducts.length} products found</span>
+          <div className="shop-page__toolbar shop-page__toolbar--gap">
+            <div>
+              <span className="shop-page__count">{filteredProducts.length} products found</span>
+              <p className="shop-page__hint">Filtered by your preferences.</p>
+            </div>
             <label className="shop-page__sort">
               <span>Sort by</span>
               <select className="shop-page__select" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
                 <option value="newest">Newest</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
+                <option value="a-z">Name A–Z</option>
               </select>
             </label>
           </div>
@@ -112,7 +126,7 @@ export default function Products() {
         </section>
       </div>
 
-      <section className="section-block">
+      <section className="section-block section-block--panel">
         <SectionHeader title="Browse product collections" subtitle="Explore curated products" />
         <div className="category-grid">
           {visibleCategories.map((category) => (

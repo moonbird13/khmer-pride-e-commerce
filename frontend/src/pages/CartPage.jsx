@@ -15,30 +15,38 @@ export default function CartPage() {
 
   return (
     <main className="cart-page page-shell">
-      <section className="hero-section">
-        <p className="eyebrow">Cart</p>
-        <h1>Your curated selection</h1>
-        <p className="hero-copy">Adjust quantities, remove items, and continue to checkout when you are ready.</p>
+      <section className="hero-section hero-section--solid">
+        <p className="eyebrow">Shopping cart</p>
+        <h1>Review your selections.</h1>
+        <p className="hero-copy">Adjust quantities, remove items, and proceed to checkout with confidence.</p>
       </section>
 
       <section className="cart-page__content">
         <div className="cart-page__items">
           {cartItems.length === 0 ? (
-            <div className="product-card">
-              <p>Your cart is empty.</p>
-              <Button to="/products">Continue browsing products</Button>
+            <div className="cart-page__empty">
+              <h2>Your cart is empty</h2>
+              <p>Explore products and add items to start your order.</p>
+              <Button to="/products">Continue shopping</Button>
             </div>
           ) : (
             cartItems.map((item) => (
               <div className="cart-page__item" key={item.id}>
-                <div className="cart-page__item-info">
-                  <h3>{item.name}</h3>
-                  <p>{item.description}</p>
-                  <strong>${item.price.toFixed(2)}</strong>
+                <div className="cart-page__item-image">
+                  <div className="cart-page__item-image-placeholder" />
+                </div>
+                <div className="cart-page__item-details">
+                  <div>
+                    <h3>{item.name}</h3>
+                    <p>{item.description}</p>
+                  </div>
+                  <div className="cart-page__item-meta">
+                    <span>${item.price.toFixed(2)}</span>
+                    <QuantitySelector value={item.quantity} onChange={(quantity) => updateQuantity(item.id, quantity)} />
+                  </div>
                 </div>
                 <div className="cart-page__item-actions">
-                  <QuantitySelector value={item.quantity} onChange={(quantity) => updateQuantity(item.id, quantity)} />
-                  <Button variant="secondary" onClick={() => removeFromCart(item.id)}>Remove</Button>
+                  <Button variant="ghost" onClick={() => removeFromCart(item.id)}>Remove</Button>
                 </div>
               </div>
             ))
@@ -46,7 +54,10 @@ export default function CartPage() {
         </div>
 
         <aside className="cart-page__summary">
-          <h2>Order summary</h2>
+          <div className="cart-page__summary-header">
+            <p className="eyebrow">Order summary</p>
+            <h2>Ready to checkout</h2>
+          </div>
           <div className="cart-page__summary-row">
             <span>Subtotal</span>
             <strong>${subtotal.toFixed(2)}</strong>
@@ -55,13 +66,15 @@ export default function CartPage() {
             <span>Shipping</span>
             <strong>${shipping.toFixed(2)}</strong>
           </div>
-          <div className="cart-page__summary-row">
+          <div className="cart-page__summary-row cart-page__summary-row--total">
             <span>Total</span>
             <strong>${total.toFixed(2)}</strong>
           </div>
-          <Button to="/products" variant="secondary">Continue browsing products</Button>
-          <Button onClick={clearCart} variant="secondary">Clear cart</Button>
-          <Button onClick={() => navigate('/checkout')}>Checkout</Button>
+          <div className="cart-page__summary-actions">
+            <Button to="/products" variant="secondary">Continue shopping</Button>
+            <Button onClick={() => navigate('/checkout')}>Proceed to checkout</Button>
+          </div>
+          <Button variant="ghost" onClick={clearCart}>Clear cart</Button>
         </aside>
       </section>
     </main>

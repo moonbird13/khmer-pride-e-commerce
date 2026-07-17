@@ -12,11 +12,10 @@ export default function CheckoutPage() {
   const [city, setCity] = useState('');
   const [email, setEmail] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('cash');
-  const [message, setMessage] = useState('');
   const navigate = useNavigate();
 
   const subtotal = useMemo(() => orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [orderItems]);
-  const shipping = 6;
+  const shipping = orderItems.length > 0 ? 6 : 0;
   const total = subtotal + shipping;
 
   const handleSubmit = (event) => {
@@ -27,48 +26,60 @@ export default function CheckoutPage() {
 
   return (
     <main className="checkout-page page-shell">
-      <section className="hero-section">
+      <section className="hero-section hero-section--solid">
         <p className="eyebrow">Checkout</p>
         <h1>Complete your order</h1>
-        <p className="hero-copy">Review the shipping details and choose a payment method to finish your purchase.</p>
+        <p className="hero-copy">Review shipping information, choose a payment method, and place your order securely.</p>
       </section>
 
       <div className="checkout-page__content">
-        <form className="checkout-page__section" onSubmit={handleSubmit}>
-          <h2>Shipping details</h2>
-          <Input label="Full name" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Your name" required />
+        <form className="checkout-page__section checkout-page__form" onSubmit={handleSubmit}>
+          <div>
+            <p className="eyebrow">Shipping information</p>
+            <h2>Delivery details</h2>
+          </div>
+
+          <Input label="Full name" value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Your full name" required />
           <Input label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required />
           <Input label="Address" value={address} onChange={(event) => setAddress(event.target.value)} placeholder="Street address" required />
           <Input label="City" value={city} onChange={(event) => setCity(event.target.value)} placeholder="Phnom Penh" required />
 
-          <h3>Payment method</h3>
-          <div className="checkout-page__payment-options">
+          <div className="checkout-page__payment-panel">
+            <p className="eyebrow">Payment method</p>
             <label className="checkout-page__payment-option">
               <input type="radio" name="payment" value="cash" checked={paymentMethod === 'cash'} onChange={(event) => setPaymentMethod(event.target.value)} />
               <span>Cash on delivery</span>
             </label>
           </div>
 
-          {message ? <div className="auth-panel__status">{message}</div> : null}
           <Button type="submit">Place order</Button>
         </form>
 
-        <aside className="checkout-page__summary">
-          <h2>Order summary</h2>
-          {orderItems.map((item) => (
-            <div className="checkout-page__summary-row" key={item.id}>
-              <span>{item.name} × {item.quantity}</span>
-              <strong>${(item.price * item.quantity).toFixed(2)}</strong>
-            </div>
-          ))}
+        <aside className="checkout-page__summary checkout-page__summary--tall">
+          <div className="checkout-page__summary-header">
+            <p className="eyebrow">Order summary</p>
+            <h2>Order total</h2>
+          </div>
+
+          <div className="checkout-page__summary-list">
+            {orderItems.map((item) => (
+              <div className="checkout-page__summary-row" key={item.id}>
+                <span>{item.name} × {item.quantity}</span>
+                <strong>${(item.price * item.quantity).toFixed(2)}</strong>
+              </div>
+            ))}
+          </div>
+
           <div className="checkout-page__summary-row">
             <span>Shipping</span>
             <strong>${shipping.toFixed(2)}</strong>
           </div>
-          <div className="checkout-page__summary-row">
+
+          <div className="checkout-page__summary-row checkout-page__summary-row--total">
             <span>Total</span>
             <strong>${total.toFixed(2)}</strong>
           </div>
+
           <Button to="/cart" variant="secondary">Back to cart</Button>
         </aside>
       </div>

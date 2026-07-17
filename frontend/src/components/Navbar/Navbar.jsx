@@ -18,64 +18,71 @@ export default function Navbar() {
 
   return (
     <header className="site-navbar">
-      <div className="navbar-brand-wrap">
-        <Link className="navbar-brand" to="/">
-          <span className="brand-mark">KP</span>
-          <span className="brand-copy">
-            <strong>Khmer Pride</strong>
-            <small>Modern Khmer commerce</small>
-          </span>
-        </Link>
-      </div>
-
-      <button
-        type="button"
-        className="navbar-toggle"
-        aria-expanded={mobileOpen}
-        aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
-        onClick={() => setMobileOpen((current) => !current)}
-      >
-        <span />
-        <span />
-        <span />
-      </button>
-
-      <nav className={`navbar-links${mobileOpen ? ' open' : ''}`} aria-label="Primary navigation">
-        {navLinks.map((link) => (
-          <NavLink
-            key={link.label}
-            to={link.to}
-            className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}
-            onClick={() => setMobileOpen(false)}
-          >
-            {link.label}
-          </NavLink>
-        ))}
-      </nav>
-
-      <div className="navbar-actions">
-        <button type="button" className="navbar-action-button" aria-label="Search">
-          <span aria-hidden="true">🔍</span>
-        </button>
-        <Link className="navbar-action-button" to="/wishlist" aria-label="Wishlist">
-          <span aria-hidden="true">♡</span>
-        </Link>
-        <Link className="navbar-action-button" to="/cart" aria-label="Cart">
-          <span aria-hidden="true">🛒</span>
-          {cartCount > 0 ? <span style={{ marginLeft: '0.25rem', fontSize: '0.75rem' }}>({cartCount})</span> : null}
-        </Link>
-        {user ? (
-          <>
-            <Link className="navbar-pill" to="/profile">Profile</Link>
-            <button type="button" className="navbar-pill navbar-pill--secondary" onClick={logout}>
-              Logout
-            </button>
-          </>
-        ) : (
-          <Link className="navbar-pill navbar-pill--primary" to="/login">
-            Login
+      <div className="navbar-container">
+        <div className="navbar-brand-wrap">
+          <Link className="navbar-brand" to="/">
+            <span className="brand-mark">KP</span>
+            <span className="brand-copy">
+              <strong>Khmer Pride</strong>
+              <small>Proud. Local. Authentic.</small>
+            </span>
           </Link>
-        )}
+        </div>
+
+        <button
+          type="button"
+          className={`navbar-toggle${mobileOpen ? ' open' : ''}`}
+          aria-expanded={mobileOpen}
+          aria-label={mobileOpen ? 'Close navigation' : 'Open navigation'}
+          onClick={() => setMobileOpen((current) => !current)}
+        >
+          <span />
+          <span />
+          <span />
+        </button>
+
+        <nav className={`navbar-links${mobileOpen ? ' open' : ''}`} aria-label="Primary navigation">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.label}
+              to={link.to}
+              className={({ isActive }) => `navbar-link${isActive ? ' active' : ''}`}
+              onClick={() => setMobileOpen(false)}
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="navbar-search">
+          <input
+            type="search"
+            className="navbar-search-input"
+            placeholder="Search products..."
+            aria-label="Search products"
+          />
+        </div>
+
+        <div className="navbar-actions">
+          <Link className="navbar-icon-button" to="/cart" aria-label="Shopping cart" title="Shopping cart">
+            <span>🛒</span>
+            {cartCount > 0 && <span className="navbar-icon-badge">{cartCount}</span>}
+          </Link>
+          {user ? (
+            <>
+              <Link className="navbar-button navbar-button-secondary" to="/profile">
+                Profile
+              </Link>
+              <button type="button" className="navbar-button navbar-button-secondary" onClick={logout}>
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link className="navbar-button navbar-button-primary" to="/login">
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );
