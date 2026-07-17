@@ -16,25 +16,13 @@ const RefreshToken = sequelize.define('RefreshToken', {
         allowNull: false,
         field: 'token'
     },
-
-    isRevoked: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-        field: 'isrevoked'
-    },
+    // `isRevoked` column removed — use `revokedAt` (timestamp) to determine revocation state.
     revokedAt: {
         type: DataTypes.DATE,
         allowNull: true,
-        field: 'revokedAt'
+        // DB column is named `revockedAt` in your schema (typo preserved for compatibility)
+        field: 'revockedAt'
     },
-
-    expiresAt: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        field: 'expires_at'
-    },
-
     createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

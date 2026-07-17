@@ -61,6 +61,22 @@ const Product = sequelize.define("Product", {
         allowNull: false,
         defaultValue: 0,
         field: "sales_count"
+    },
+    imageUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "image_url"
+    },
+    publicId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: "public_id"
+    },
+    quantity: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0,
+        field: "quantity"
     }
 }, {
     tableName: "Product",

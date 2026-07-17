@@ -57,7 +57,13 @@ const saveUserRecord = async (user) => {
  * 4. Store user data
  * 5. Return created user information
  */
-const register = async ({ fullName, email, password, phone }) => {
+const register = async ({ fullName, email, password, phone, role }) => {
+  if (role && ['staff', 'admin'].includes(String(role).toLowerCase())) {
+    const error = new Error('Staff and admin accounts cannot be created through registration.');
+    error.status = 403;
+    throw error;
+  }
+
   if (!fullName || (!email && !phone) || !password) {
     throw Object.assign(new Error('All fields are required.'), { status: 400 });
   }
@@ -92,7 +98,7 @@ if (normalizedPhone && normalizedPhone.length === 0) {
     normalizedEmail || normalizedPhone
 );
   if (existingUser) {
-    const error = new Error('Email already registered.');
+    const error = new Error('An account with this email or phone number already exists.');
     error.status = 409;
     throw error;
   }
@@ -195,7 +201,9 @@ const refreshAccessToken = async ({ refreshToken }) => {
   const user = await getUserById(payload.id);
 
   const storedToken = await refreshTokenRepository.findByToken(refreshToken, payload.id);
-  if (!user || !storedToken || storedToken.isRevoked || new Date(storedToken.expiresAt) < new Date()) {
+  // consider token revoked when `revokedAt` is set
+  const isTokenRevoked = storedToken && storedToken.revokedAt;
+  if (!user || !storedToken || isTokenRevoked || new Date(storedToken.expiresAt) < new Date()) {
     const error = new Error('Invalid refresh token.');
     error.status = 403;
     throw error;

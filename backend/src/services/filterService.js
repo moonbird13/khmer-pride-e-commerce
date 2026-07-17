@@ -128,6 +128,9 @@ const toProductPayload = (product) => ({
   isBestSeller: Boolean(product.isBestSeller),
   isNewArrival: Boolean(product.isNewArrival),
   salesCount: Number(product.salesCount || 0),
+  imageUrl: product.imageUrl || null,
+  publicId: product.publicId || null,
+  quantity: Number(product.quantity || 0),
   createdAt: product.createAt,
 });
 

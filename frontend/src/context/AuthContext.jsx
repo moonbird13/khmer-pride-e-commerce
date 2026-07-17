@@ -36,6 +36,23 @@ export function AuthProvider({ children }) {
     return response.data;
   };
 
+  const loginStaff = async (identifier, password) => {
+    const response = await api.post('/auth/staff-login', {
+      identifier,
+      password,
+    });
+
+    const { accessToken, user: loggedUser } = response.data;
+
+    localStorage.setItem('khmer-pride-token', accessToken);
+    localStorage.setItem('khmer-pride-user', JSON.stringify(loggedUser));
+    setAuthToken(accessToken);
+    setToken(accessToken);
+    setUser(loggedUser);
+
+    return response.data;
+  };
+
   const register = async ({ fullName, email, phone, password }) => {
     const response = await api.post('/auth/register', { fullName, email, phone, password });
     return response.data;
@@ -55,7 +72,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = useMemo(() => ({ user, token, loading, login, register, logout, api }), [user, token, loading]);
+  const value = useMemo(() => ({ user, token, loading, login, loginStaff, register, logout, api }), [user, token, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

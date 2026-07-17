@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -56,7 +57,42 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use("/api/favorites",favoriteRoute);
 
+const createUserIfMissing = async ({ email, fullName, password, role }) => {
+  if (!email) {
+    return;
+  }
+
+  const existingUser = await db.User.findOne({ where: { email: email.toLowerCase().trim() } });
+  if (existingUser) {
+    return;
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  await db.User.create({
+    fullName,
+    email: email.toLowerCase().trim(),
+    password: hashedPassword,
+    role,
+  });
+  console.log(`Seeded user: ${email} (${role})`);
+};
+
 const seedInitialData = async () => {
+  await Promise.all([
+    createUserIfMissing({
+      email: 'admin@khmerpride.com',
+      fullName: 'Admin User',
+      password: 'admin123',
+      role: 'admin',
+    }),
+    createUserIfMissing({
+      email: 'staff@khmerpride.com',
+      fullName: 'Staff User',
+      password: 'staff123',
+      role: 'staff',
+    }),
+  ]);
+
   const categoryCount = await db.Category.count();
   if (categoryCount > 0) {
     return;

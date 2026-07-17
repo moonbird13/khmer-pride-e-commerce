@@ -27,7 +27,7 @@ export const findByToken = async (token, userId) => {
 export const revokeToken = async (userId, token) => {
   return await RefreshToken.update(
     {
-      isRevoked: true,
+      // no boolean flag in DB; record revocation time only
       revokedAt: new Date(),
     },
     {
