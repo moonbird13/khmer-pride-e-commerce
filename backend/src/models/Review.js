@@ -43,8 +43,8 @@ const Review = sequelize.define('Review', {
     tableName: 'Reviews',
     timestamps: false,
     indexes: [
-        { fields: ['userId'] },
-        { fields: ['productId'] }
+        { fields: ['user_ID'] },
+        { fields: ['product_ID'] }
     ]
 });
 

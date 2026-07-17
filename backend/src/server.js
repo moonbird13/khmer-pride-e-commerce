@@ -10,7 +10,7 @@ import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-import favoriteRoute from "./routes/favorite.route.js";
+import favoriteRoute from "./routes/favoriteRoute.js";
 
 
 dotenv.config();

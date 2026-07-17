@@ -28,7 +28,7 @@ const Category = sequelize.define("Category", {
     tableName: "Category",
     timestamps: false,
     indexes: [
-        {fields: ['categoryStatus']}
+        {fields: ['status']}
     ]
 
 });

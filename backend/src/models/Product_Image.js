@@ -29,7 +29,7 @@ const Product_Image = sequelize.define("Product_Image", {
 }, {
     tableName: "Product_Images",
     timestamps: false,
-    indexes: [{ fields: ['productId'] }]
+    indexes: [{ fields: ['product_ID'] }]
 });
 
 export default Product_Image;

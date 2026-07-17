@@ -51,8 +51,8 @@ const Order_detail = sequelize.define('Order_detail', {
     tableName: 'Order_Detail',
     timestamps: false,
     indexes: [
-        { fields: ['orderId'] },
-        { fields: ['productId'] }
+        { fields: ['order_ID'] },
+        { fields: ['product_ID'] }
     ]
 });
 

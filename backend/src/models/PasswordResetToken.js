@@ -47,7 +47,7 @@ const PasswordResetToken = sequelize.define('PasswordResetToken', {
     tableName: 'Password_Reset_Tokens',
     timestamps: false,
     indexes: [
-        { unique: true, fields: ['userId'] }
+        { unique: true, fields: ['user_ID'] }
     ]
 });
 

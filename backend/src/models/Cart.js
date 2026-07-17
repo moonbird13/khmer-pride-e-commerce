@@ -31,7 +31,7 @@ const Cart = sequelize.define('Cart', {
     tableName: 'Cart',
     timestamps: false,
     indexes: [
-        { fields: ['userId'] }
+        { fields: ['user_ID'] }
     ]
 });
 

@@ -66,7 +66,7 @@ const Product = sequelize.define("Product", {
     tableName: "Product",
     timestamps: false,
     indexes: [
-        { fields: ['categoryId'] },
+        { fields: ['category_ID'] },
         { unique: true, fields: ['slug'] }
     ]
 });

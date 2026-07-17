@@ -1,51 +1,87 @@
-import Favorite from "../models/Favorite";
+import Favorite from "../models/Favorite.js";
+import Product from "../models/Product.js";
+import Category from "../models/Category.js";
 
-//---------------------------------------
-// Search
+
 // --------------------------------------
-
-// Find all favorite of a user
+// Find all favorites by user
+// --------------------------------------
 export const findAllFavorites = async (userId) => {
 
     return await Favorite.findAll({
-        where: { userId },
-        order: [["favoriteId", "ASC"]],
+        where: {
+            userId
+        },
+        include: [
+            {
+                model: Product,
+                include: [
+                    {
+                        model: Category
+                    }
+                ]
+            }
+        ],
+        order: [
+            ["favoriteId", "ASC"]
+        ]
     });
-}
-
-// Search favorite by id
-export const findFavoriteById = async (favoriteId) => {
-    return await Favorite.findByPk(favoriteId);
-}
+};
 
 
-//------------------------------------------
-// Create or add
-// -----------------------------------------
+// --------------------------------------
+// Find favorite by user + product
+// Used for checking duplicate
+// --------------------------------------
+export const findFavorite = async (userId, productId) => {
 
-//add favorite product to favorite list
-export const addFavorite = async ({ userId, productId}) {
+    return await Favorite.findOne({
+        where: {
+            userId,
+            productId
+        }
+    });
+};
+
+
+// --------------------------------------
+// Add favorite
+// --------------------------------------
+export const addFavorite = async ({
+    userId,
+    productId
+}) => {
 
     return await Favorite.create({
         userId,
         productId
     });
-}
 
-// -----------------------------------------
-// remove or delete
-// -----------------------------------------
+};
 
-//remove favorite from the list
-export const removeFavorite = async (userId, productId) => {
 
-    return await Favorite.update(
-        { isFavorite: false },
-        { where: { userId, productId } }
-    );
-}
+// --------------------------------------
+// Remove favorite
+// --------------------------------------
+export const removeFavorite = async (
+    userId,
+    productId
+) => {
 
-export default {findAllFavorites, 
-                findFavoriteById, 
-                addFavorite, 
-                removeFavorite};
+    return await Favorite.destroy({
+        where: {
+            userId,
+            productId
+        }
+    });
+
+};
+
+
+
+export default {
+    findAllFavorites,
+    findFavorite,
+    addFavorite,
+    removeFavorite
+};
