@@ -161,8 +161,8 @@ const getFilterOptionsHandler = async (req, res) => {
 const updateProductHandler = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log('updateProductHandler called', { id, body: req.body, hasFile: !!req.file });
     const data = { ...req.body };
-
     let imageUrl = null;
     let publicId = null;
 
