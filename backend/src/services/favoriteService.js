@@ -1,5 +1,6 @@
-import favoriteRepository, { findFavorite } from "../repositories/favorite.repository.js";
-import { findProductById } from "../repositories/product.repository.js";
+import * as favoriteRepository from "../repositories/favorite.repository.js";
+import * as productRepository from "../repositories/product.repository.js";
+import * as userRepository from "../repositories/user.repository.js";
 
 
 // Format product data before sending to frontend
@@ -71,7 +72,7 @@ export const addToFavorite = async (
     // We should not create:
     // Favorites(userId:5, productId:999)
 
-    const product = await findProductById(productId);
+    const product = await productRepository.findProductById(productId);
 
 
     if(!product){

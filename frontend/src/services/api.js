@@ -102,7 +102,7 @@ const getOrders = async () => {
 // Get all favorite products
 const getFavorites = async () => {
   const { data } = await api.get(`/favorites`);
-  return Array.isArray(data) ? data : data.data || [];
+  return data.data || [];
 };
 
 // Add product to favorite

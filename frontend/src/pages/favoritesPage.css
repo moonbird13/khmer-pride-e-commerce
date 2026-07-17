@@ -1,0 +1,110 @@
+.favorites-page {
+  min-height: 100vh;
+  padding: 40px 8%;
+  background: #fff8ed;
+}
+
+/* Hero */
+.favorites-hero {
+  height: 230px;
+  border-radius: 30px;
+  background: linear-gradient(
+    120deg,
+    #8b5a3c,
+    #c8956b
+  );
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #1d1b1b;
+  margin-bottom: 35px;
+
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+
+.favorites-hero h1 {
+  font-size: 48px;
+  font-weight: 800;
+}
+
+
+
+/* Product area */
+
+.favorite-container {
+  background: white;
+  border-radius: 25px;
+  padding: 35px;
+
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+}
+
+
+.favorite-container h2 {
+  font-size: 28px;
+  margin-bottom: 25px;
+}
+
+
+
+/* Grid */
+
+.favorite-grid {
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(auto-fill,minmax(240px,1fr));
+
+  gap: 25px;
+
+}
+
+
+
+/* Empty state */
+
+.empty-favorite {
+
+  background:white;
+
+  border-radius:25px;
+
+  padding:50px;
+
+  text-align:center;
+
+}
+
+
+.empty-favorite p {
+
+  font-size:20px;
+
+  color:#555;
+
+}
+
+
+.empty-favorite button {
+
+  margin-top:20px;
+
+  background:#f5a623;
+
+  color:white;
+
+  border:none;
+
+  padding:14px 30px;
+
+  border-radius:30px;
+
+  font-size:16px;
+
+  cursor:pointer;
+
+}
