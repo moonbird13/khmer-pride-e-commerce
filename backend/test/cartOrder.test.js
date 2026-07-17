@@ -21,13 +21,13 @@ const createFixtureUser = async (prefix) => {
 
 test('cart service can add, update, and remove items', async () => {
   const user = await createFixtureUser('CartAdd');
-  const category = await createCategory({ categoryName: `Cart Category ${Date.now()}` });
+  const category = await createCategory({ categoryName: `Test Category ${Date.now()}` });
   const product = await createProduct({
-    productName: 'Cart Test Product',
+    productName: 'Test Product',
     productPrice: 10,
-    productDescription: 'Cart service test product',
+    productDescription: 'Test product',
     categoryId: category.id,
-    slug: `cart-test-product-${Date.now()}`,
+    slug: `test-product-${Date.now()}`,
   });
 
   await addToCart({ userId: user.userId, productId: product.id, quantity: 2 });
@@ -44,13 +44,13 @@ test('cart service can add, update, and remove items', async () => {
 
 test('cart service can clear cart', async () => {
   const user = await createFixtureUser('CartClear');
-  const category = await createCategory({ categoryName: `Clear Category ${Date.now()}` });
+  const category = await createCategory({ categoryName: `Test Category ${Date.now()}` });
   const product = await createProduct({
-    productName: 'Clear Cart Product',
+    productName: 'Test Product',
     productPrice: 8,
-    productDescription: 'Cart clear test product',
+    productDescription: 'Test product',
     categoryId: category.id,
-    slug: `clear-cart-product-${Date.now()}`,
+    slug: `test-product-${Date.now()}`,
   });
 
   await addToCart({ userId: user.userId, productId: product.id, quantity: 1 });

@@ -10,8 +10,9 @@ export default function AuthPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const pathname = location.pathname;
+  const isStaffLogin = pathname === '/staff-login';
   const mode = pathname === '/register' ? 'register' : pathname === '/forgot-password' ? 'forgot' : pathname.startsWith('/reset-password') ? 'reset' : pathname.startsWith('/verify-email') ? 'verify' : 'login';
-  const { login, register } = useAuth();
+  const { login, loginStaff, register } = useAuth();
 
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
@@ -33,7 +34,7 @@ export default function AuthPage() {
         setMessage('Registration successful. Please log in with your new account.');
         setTimeout(() => navigate('/login'), 1500);
       } else {
-        const result = await login(identifier, authPassword);
+        const result = await (isStaffLogin ? loginStaff(identifier, authPassword) : login(identifier, authPassword));
         const role = result?.user?.role;
         setMessage('Login successful.');
         setTimeout(() => {
@@ -89,17 +90,19 @@ export default function AuthPage() {
       <div className="auth-shell">
         <section className="auth-intro">
           <p className="eyebrow">Khmer Pride</p>
-          <h1>{mode === 'register' ? 'Create an account' : mode === 'forgot' ? 'Recover your access' : mode === 'reset' ? 'Set a new password' : mode === 'verify' ? 'Confirm your email' : 'Welcome back'}</h1>
+          <h1>{isStaffLogin ? 'Staff sign in' : mode === 'register' ? 'Create an account' : mode === 'forgot' ? 'Recover your access' : mode === 'reset' ? 'Set a new password' : mode === 'verify' ? 'Confirm your email' : 'Welcome back'}</h1>
           <p>
-            {mode === 'register'
-              ? 'Join the Khmer Pride community and keep track of favourite pieces.'
-              : mode === 'forgot'
-                ? 'We will send your reset request to the backend and continue to the next step.'
-                : mode === 'reset'
-                  ? 'Choose a new password for your Khmer Pride account.'
-                  : mode === 'verify'
-                    ? 'Your email verification screen is ready for the next integration step.'
-                    : 'Sign in to continue browsing and check out seamlessly.'}
+            {isStaffLogin
+              ? 'Use your staff or admin credentials to access the staff portal.'
+              : mode === 'register'
+                ? 'Join the Khmer Pride community and keep track of favourite pieces.'
+                : mode === 'forgot'
+                  ? 'We will send your reset request to the backend and continue to the next step.'
+                  : mode === 'reset'
+                    ? 'Choose a new password for your Khmer Pride account.'
+                    : mode === 'verify'
+                      ? 'Your email verification screen is ready for the next integration step.'
+                      : 'Sign in to continue browsing and check out seamlessly.'}
           </p>
         </section>
 
@@ -111,7 +114,11 @@ export default function AuthPage() {
               <AuthForm mode={mode} onSubmit={handleAuthSubmit} loading={loading} />
               <div className="auth-link-row">
                 <Link to="/forgot-password">Forgot password?</Link>
-                <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create account' : 'Back to login'}</Link>
+                {!isStaffLogin ? (
+                  <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create account' : 'Back to login'}</Link>
+                ) : (
+                  <Link to="/login">Customer login</Link>
+                )}
               </div>
             </>
           ) : null}

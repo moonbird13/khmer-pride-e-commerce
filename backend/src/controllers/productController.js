@@ -6,6 +6,8 @@ import {
   getProductsByCategory,
   getFeaturedProducts,
   getNewArrivals,
+  updateProduct,
+  deleteProduct,
 } from '../services/productService.js';
 import { getFilteredProducts, getFilterOptions } from '../services/filterService.js';
 import { createCategory, listCategories, getCategoryById } from '../services/categoryService.js';
@@ -156,6 +158,55 @@ const getFilterOptionsHandler = async (req, res) => {
   }
 };
 
+const updateProductHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const data = { ...req.body };
+
+    let imageUrl = null;
+    let publicId = null;
+
+    if (req.file) {
+      const result = await uploadToCloudinary(
+        req.file.buffer,
+        "products"
+      );
+
+      imageUrl = result.secure_url;
+      publicId = result.public_id;
+
+      data.imageUrl = imageUrl;
+      data.publicId = publicId;
+    }
+
+    const product = await updateProduct(id, data);
+
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+
+    return res.json(product);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Unable to update product.' });
+  }
+};
+
+const deleteProductHandler = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await deleteProduct(id);
+
+    if (!result) {
+      return res.status(404).json({ message: 'Product not found.' });
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({ message: error.message || 'Unable to delete product.' });
+  }
+};
+
 export {
   createCategoryHandler,
   listCategoriesHandler,
@@ -166,5 +217,7 @@ export {
   getFeaturedProductsHandler,
   getNewArrivalsHandler,
   getFilterOptionsHandler,
+  updateProductHandler,
+  deleteProductHandler,
 };
 

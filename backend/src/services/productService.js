@@ -7,7 +7,9 @@ import {
  findFeaturedProducts,
  findNewProducts,
  findBestSellerProducts,
- saveProduct
+ saveProduct,
+ updateProduct as updateProductRepo,
+ deleteProduct as deleteProductRepo
 } from "../repositories/product.repository.js";
 
 
@@ -30,6 +32,9 @@ const formatProduct = (product)=>({
     isBestSeller:Boolean(product.isBestSeller),
     isNewArrival:Boolean(product.isNewArrival),
     salesCount:Number(product.salesCount || 0),
+    imageUrl:product.imageUrl || null,
+    publicId:product.publicId || null,
+    quantity:Number(product.quantity || 0),
     createdAt:product.createAt
 
 });
@@ -113,6 +118,27 @@ export const getBestSellerProducts = async()=>{
     return products.map(formatProduct);
 };
 
+// Update product
+export const updateProduct = async(id, data)=>{
+
+    if(data.productPrice && data.productPrice <= 0){
+        throw new Error("Product price must be greater than zero");
+    }
+
+    const product = await updateProductRepo(id, data);
+    if(!product) return null;
+
+    return formatProduct(product);
+};
+
+// Delete product
+export const deleteProduct = async(id)=>{
+    const product = await deleteProductRepo(id);
+    if(!product) return null;
+
+    return { message: "Product deleted successfully" };
+};
+
 export default {
     createProduct,
     listProducts,
@@ -121,5 +147,7 @@ export default {
     getProductsByCategory,
     getFeaturedProducts,
     getNewArrivals,
-    getBestSellerProducts
+    getBestSellerProducts,
+    updateProduct,
+    deleteProduct
 }

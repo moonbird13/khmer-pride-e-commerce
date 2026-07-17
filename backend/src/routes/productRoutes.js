@@ -6,6 +6,8 @@ import {
   listProductsHandler,
   getProductByIdHandler,
   getFilterOptionsHandler,
+  updateProductHandler,
+  deleteProductHandler,
 } from '../controllers/productController.js';
 
 const router = express.Router();
@@ -19,6 +21,19 @@ router.post(
     authorizeRoles('admin', 'staff'),
     upload.single('image'),
     createProductHandler
+);
+router.put(
+    '/:id',
+    authenticate,
+    authorizeRoles('admin', 'staff'),
+    upload.single('image'),
+    updateProductHandler
+);
+router.delete(
+    '/:id',
+    authenticate,
+    authorizeRoles('admin', 'staff'),
+    deleteProductHandler
 );
 
 export default router;

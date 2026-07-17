@@ -203,6 +203,26 @@ export const saveProduct = async(product)=>{
 
 };
 
+// Update product
+export const updateProduct = async(id, data)=>{
+
+    const product = await Product.findByPk(Number(id));
+    if(!product) return null;
+
+    return await product.update(data);
+
+};
+
+// Delete product
+export const deleteProduct = async(id)=>{
+
+    const product = await Product.findByPk(Number(id));
+    if(!product) return null;
+
+    return await product.destroy();
+
+};
+
 
 export default {
     createProduct,
@@ -213,5 +233,7 @@ export default {
     findFeaturedProducts,
     findNewProducts,
     findBestSellerProducts,
-    saveProduct
+    saveProduct,
+    updateProduct,
+    deleteProduct
 }

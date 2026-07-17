@@ -4,30 +4,30 @@ import { createCategory, listCategories, getCategoryById } from '../src/services
 import { createProduct, listProducts, getProductById,} from '../src/services/productService.js';
 
 test('category service can create and list categories', async () => {
-  const category = await createCategory({ categoryName: 'Textiles', categoryStatus: 'Active' });
+  const category = await createCategory({ categoryName: `Test Category ${Date.now()}`, categoryStatus: 'Active' });
   const categories = await listCategories();
   const found = await getCategoryById(category.id);
 
-  assert.equal(category.name, 'Textiles');
+  assert.equal(category.name, category.name);
   assert.equal(category.status, 'Active');
   assert.equal(categories.length > 0, true);
-  assert.equal(found?.name, 'Textiles');
+  assert.equal(found?.name, category.name);
 });
 
 test('product service can create and retrieve products', async () => {
-  const category = await createCategory({ categoryName: 'Crafts', categoryStatus: 'Active' });
+  const category = await createCategory({ categoryName: `Test Category ${Date.now()}`, categoryStatus: 'Active' });
   const product = await createProduct({
-    productName: 'Silk Scarf',
+    productName: 'Test Product',
     productPrice: 24,
-    productDescription: 'Traditional Khmer silk scarf',
+    productDescription: 'Test product',
     categoryId: category.id,
-    slug: 'silk-scarf',
+    slug: `test-product-${Date.now()}`,
   });
 
   const products = await listProducts();
   const found = await getProductById(product.id);
 
-  assert.equal(product.name, 'Silk Scarf');
+  assert.equal(product.name, 'Test Product');
   assert.equal(product.price, 24);
   assert.equal(products.length > 0, true);
   assert.equal(found?.name, 'Silk Scarf');

@@ -8,6 +8,7 @@ import {
   forgotPassword as forgotPasswordService,
   resetPassword as resetPasswordService,
   changePassword as changePasswordService,
+  // no export change in service; controller enforces staff role
 } from '../services/authService.js';
 import User from '../models/User.js';
 
@@ -40,6 +41,36 @@ const login = async (req, res) => {
     });
   } catch (error) {
     return res.status(error.status || 500).json({ message: error.message || 'Login failed.' });
+  }
+};
+
+const staffLogin = async (req, res) => {
+  try {
+    const result = await loginService(req.body);
+
+    const allowed = ['staff', 'admin'];
+    const userRole = (result.user && result.user.role) || '';
+
+    if (!allowed.includes(String(userRole).toLowerCase())) {
+      return res.status(403).json({ message: 'Access denied. Not a staff account.' });
+    }
+
+    res.cookie('refreshToken', result.refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      message: 'Staff login successful.',
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+      redirect: '/staff-portal',
+    });
+  } catch (error) {
+    return res.status(error.status || 500).json({ message: error.message || 'Staff login failed.' });
   }
 };
 
@@ -135,5 +166,7 @@ export {
   forgotPassword,
   resetPassword,
   changePassword,
+  // Staff login handler: allow only staff/admin roles
+  staffLogin,
   profile,
 };

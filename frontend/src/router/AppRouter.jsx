@@ -46,6 +46,7 @@ export default function AppRouter() {
       <Route path="/products" element={<Products />} />
       <Route path="/products/:id" element={<ProductDetailPage />} />
       <Route path="/login" element={<AuthPage />} />
+      <Route path="/staff-login" element={<AuthPage />} />
       <Route path="/register" element={<AuthPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
