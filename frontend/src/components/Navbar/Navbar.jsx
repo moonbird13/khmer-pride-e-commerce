@@ -64,7 +64,8 @@ export default function Navbar() {
           </form>
 
           <div className="navbar-actions">
-            <Link className="navbar-action-button" to="/wishlist" aria-label="Wishlist">
+            {/* change /whishlist to /favorites */}
+            <Link className="navbar-action-button" to="/favorites" aria-label="Wishlist">
               <span aria-hidden="true">♡</span>
             </Link>
             <Link className="navbar-action-button" to="/cart" aria-label="Cart">

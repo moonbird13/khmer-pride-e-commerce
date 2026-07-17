@@ -49,7 +49,11 @@ const Order_detail = sequelize.define('Order_detail', {
     }
 }, {
     tableName: 'Order_Detail',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { fields: ['order_ID'] },
+        { fields: ['product_ID'] }
+    ]
 });
 
 export default Order_detail;

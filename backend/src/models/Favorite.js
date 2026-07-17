@@ -27,7 +27,11 @@ const Favorite = sequelize.define('Favorite', {
     }
 }, {
     tableName: 'Favorites',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { fields: ['user_ID'] },
+        { fields: ['product_ID'] }
+    ]
 });
 
 

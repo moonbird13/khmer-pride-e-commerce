@@ -59,6 +59,7 @@ const User = sequelize.define('User', {
 }, {
   tableName: 'Users',
   timestamps: false,
+  indexes: [{ fields: ['role'] }]
 });
 
 export default User;

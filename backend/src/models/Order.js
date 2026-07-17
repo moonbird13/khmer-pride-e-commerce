@@ -57,7 +57,11 @@ const Order = sequelize.define('Order', {
     }
 }, {
     tableName: 'Orders',
-    timestamps: false
+    timestamps: false,
+    indexes: [
+        { fields: ['user_ID'] },
+        { fields: ['order_status']}
+    ]
 });
 
 export default Order;
