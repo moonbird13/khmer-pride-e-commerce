@@ -12,6 +12,8 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import favoriteRoute from "./routes/favoriteRoute.js";
+import requestRoutes from './routes/requestRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 
 
 dotenv.config();
@@ -55,7 +57,9 @@ app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/users', userRoutes);
 app.use("/api/favorites",favoriteRoute);
+app.use('/api/requests', requestRoutes);
 
 const createUserIfMissing = async ({ email, fullName, password, role }) => {
   if (!email) {

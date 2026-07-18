@@ -1,0 +1,104 @@
+.staff-requests {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.staff-requests .panel-header {
+  margin-bottom: 24px;
+}
+
+.staff-requests .panel-header h2 {
+  margin-bottom: 8px;
+}
+
+.staff-requests .request-form,
+.staff-requests .request-history {
+  background: #fff;
+  border: 1px solid #e3e7ee;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.staff-requests .form-row {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.staff-requests .request-type-row {
+  grid-template-columns: 1fr 1.5fr;
+  align-items: end;
+}
+
+.staff-requests label {
+  font-size: 0.95rem;
+  color: #33475b;
+}
+
+.staff-requests input,
+.staff-requests select,
+.staff-requests textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd2d9;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+.staff-requests .form-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.staff-requests .btn {
+  border: none;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.staff-requests .btn-primary {
+  background: #1d4ed8;
+  color: white;
+}
+
+.staff-requests .btn-secondary {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.staff-requests .form-error {
+  color: #b91c1c;
+  margin-bottom: 16px;
+}
+
+.staff-requests .form-success {
+  color: #166534;
+  margin-bottom: 16px;
+}
+
+.staff-requests .request-table {
+  margin-bottom: 20px;
+}
+
+.staff-requests .request-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #f8fafc;
+}
+
+.staff-requests .request-card__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.staff-requests .request-card__header strong {
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}

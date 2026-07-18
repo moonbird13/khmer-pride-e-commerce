@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import './StaffDashboardPage.css';
 import ProductManagement from '../components/ProductManagement/ProductManagement';
+import StaffRequests from '../components/StaffRequests/StaffRequests';
 
 const MENU_ITEMS = [
   { key: 'orders', label: 'Orders' },
   { key: 'inventory', label: 'Inventory' },
   { key: 'product', label: 'Product' },
+  { key: 'requests', label: 'Requests' },
 ];
 
 const DASHBOARD_METRICS = [
@@ -186,6 +188,13 @@ export default function StaffDashboardPage() {
         {activeSection === 'product' && (
           <div className="panel-block">
             <ProductManagement />
+          </div>
+        )}
+
+        {/* Staff Requests Section */}
+        {activeSection === 'requests' && (
+          <div className="panel-block">
+            <StaffRequests />
           </div>
         )}
       </section>

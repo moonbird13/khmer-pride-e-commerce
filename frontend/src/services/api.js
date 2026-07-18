@@ -108,6 +108,11 @@ const createOrder = async (payload) => {
   return data;
 };
 
+const cancelOrder = async (orderId) => {
+  const { data } = await api.put(`/orders/${orderId}/status`, { status: 'Cancelled' });
+  return data;
+};
+
 const getOrders = async () => {
   const { data } = await api.get('/orders');
   return Array.isArray(data) ? data : data.orders || [];
@@ -155,6 +160,7 @@ export {
   removeCartItem,
   clearCart,
   createOrder,
+  cancelOrder,
   getOrders,
   getFavorites,
   addFavorite,

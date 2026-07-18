@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Button from '../components/Button/Button.jsx';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import QuantitySelector from '../components/QuantitySelector/QuantitySelector.jsx';
+import { addFavorite, getFavorites, removeFavorite } from '../services/api';
 import api from '../services/api';
 import './ProductDetailPage.css';
 
@@ -74,7 +76,58 @@ export default function ProductDetailPage() {
   }, [id]);
 
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+
+  useEffect(() => {
+    const loadCustomerFavorites = async () => {
+      if (!user || user.role !== 'customer') {
+        setFavoriteIds(new Set());
+        return;
+      }
+
+      try {
+        const favorites = await getFavorites();
+        setFavoriteIds(new Set(favorites.map((item) => String(item.id))));
+      } catch (error) {
+        console.error('Failed to load favorites:', error);
+      }
+    };
+
+    loadCustomerFavorites();
+  }, [user]);
+
   const handleAddToCart = () => addToCart(product, quantity);
+
+  const handleToggleFavorite = async (productToToggle) => {
+    if (!user || user.role !== 'customer' || !productToToggle?.id) return;
+
+    const productId = String(productToToggle.id);
+    const isFavorited = favoriteIds.has(productId);
+
+    try {
+      if (isFavorited) {
+        await removeFavorite(productToToggle.id);
+        setFavoriteIds((current) => {
+          const next = new Set(current);
+          next.delete(productId);
+          return next;
+        });
+      } else {
+        await addFavorite(productToToggle.id);
+        setFavoriteIds((current) => {
+          const next = new Set(current);
+          next.add(productId);
+          return next;
+        });
+      }
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+      window.alert(error?.response?.data?.message || 'Unable to save this favorite. Please log in again and retry.');
+    }
+  };
+
+  const isCurrentProductFavorite = product && favoriteIds.has(String(product.id));
 
   if (!product) {
     return <main className="product-detail-page page-shell"><p>Loading product...</p></main>;
@@ -114,6 +167,16 @@ export default function ProductDetailPage() {
           <div className="product-detail-page__actions">
             <QuantitySelector value={quantity} onChange={setQuantity} />
             <Button onClick={handleAddToCart}>Add to cart</Button>
+            {user?.role === 'customer' ? (
+              <button
+                type="button"
+                className={`product-detail-page__favorite ${isCurrentProductFavorite ? 'active' : ''}`}
+                onClick={() => handleToggleFavorite(product)}
+                aria-label={isCurrentProductFavorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.9-8.6a5.5 5.5 0 0 0-.1-7.8Z" /></svg>
+              </button>
+            ) : null}
             <Button to="/checkout" variant="secondary">Checkout</Button>
           </div>
 
@@ -135,7 +198,13 @@ export default function ProductDetailPage() {
         <h2>Related products</h2>
         <div className="product-grid">
           {relatedProducts.map((item) => (
-            <ProductCard key={item.id} product={item} />
+            <ProductCard
+              key={item.id}
+              product={item}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={handleToggleFavorite}
+              isFavorite={favoriteIds.has(String(item.id))}
+            />
           ))}
         </div>
       </section>

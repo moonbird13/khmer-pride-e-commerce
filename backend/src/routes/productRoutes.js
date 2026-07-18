@@ -18,7 +18,7 @@ router.get('/:id', getProductByIdHandler);
 router.post(
     '/',
     authenticate,
-    authorizeRoles('admin', 'staff'),
+    authorizeRoles('admin'),
     upload.single('image'),
     createProductHandler
 );
@@ -32,8 +32,9 @@ router.put(
 router.delete(
     '/:id',
     authenticate,
-    authorizeRoles('admin', 'staff'),
+    authorizeRoles('admin'),
     deleteProductHandler
 );
 
 export default router;
+

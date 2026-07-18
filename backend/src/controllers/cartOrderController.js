@@ -58,7 +58,7 @@ const createOrderHandler = async (req, res) => {
   try {
     // Frontend sends: items, total, shippingAddress, shippingCity, paymentMethod
     // Backend needs: userId, items, total
-    const { items, total, shippingAddress, shippingCity, paymentMethod } = req.body;
+    const { items, total, addressId, shippingAddress, shippingCity, paymentMethod } = req.body;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Order must contain at least one item.' });
@@ -72,8 +72,11 @@ const createOrderHandler = async (req, res) => {
       userId: req.user?.id,
       items,
       total,
-      shippingAddress,
-      shippingCity,
+      addressId,
+      addressData: {
+        street: shippingAddress || '',
+        province: shippingCity || '',
+      },
       paymentMethod,
     });
 

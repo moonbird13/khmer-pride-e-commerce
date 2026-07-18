@@ -13,6 +13,7 @@ import ResetPasswordPage from '../pages/ResetPasswordPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ProfilePage from '../pages/ProfilePage';
 import OrdersPage from '../pages/OrdersPage';
+import FavoritesPage from '../pages/FavoritesPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
 import StaffDashboardPage from '../pages/StaffDashboardPage';
 import AboutPage from '../pages/AboutPage';
@@ -88,10 +89,18 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute requiredRole={['customer']}>
+            <FavoritesPage />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Protected Routes - Admin/Staff */}
       <Route
-        path="/admin-dashboard"
+        path="/admin-portal"
         element={
           <ProtectedRoute requiredRole={['admin']}>
             <AdminDashboardPage />
@@ -112,3 +121,4 @@ export default function AppRouter() {
     </Routes>
   );
 }
+

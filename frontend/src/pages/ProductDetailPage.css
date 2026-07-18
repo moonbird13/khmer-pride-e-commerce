@@ -84,6 +84,9 @@
   align-items: center;
 }
 
+.product-detail-page__favorite { width: 5rem; height: 5rem; border: 3px solid #d9e0e4; border-radius: 50%; background: #fff; color: #e53935; display: grid; place-items: center; cursor: pointer; transition: transform .2s ease, border-color .2s ease; }
+.product-detail-page__favorite:hover { transform: scale(1.04); border-color: #e53935; }
+
 .product-detail-page__section {
   padding: 20px;
   border-radius: 20px;

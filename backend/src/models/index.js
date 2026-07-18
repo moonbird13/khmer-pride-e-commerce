@@ -16,6 +16,8 @@ import Inventory from './Inventory.js';
 import RefreshToken from './RefreshToken.js';
 import EmailVerificationToken from './EmailVerificationToken.js';
 import PasswordResetToken from './PasswordResetToken.js';
+import InventoryRequest from './InventoryRequest.js';
+import ProductRequest from './ProductRequest.js';
 
 
 
@@ -35,7 +37,9 @@ const db = {
     Inventory,
     RefreshToken,
     EmailVerificationToken,
-    PasswordResetToken
+    PasswordResetToken,
+    InventoryRequest,
+    ProductRequest
 };
 
 // Define associations
@@ -215,10 +219,30 @@ Product.hasMany(Favorite, {
     onUpdate: 'CASCADE'
 });
 
+// -------------------------------- REQUEST WORKFLOW --------------------------------
+// Product -> InventoryRequest
+Product.hasMany(InventoryRequest, { foreignKey: 'productId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+InventoryRequest.belongsTo(Product, { foreignKey: 'productId', onDelete: 'CASCADE', onUpdate: 'CASCADE' });
+
+// Staff (User) -> InventoryRequest; Admin reviewer is optional.
+User.hasMany(InventoryRequest, { foreignKey: 'staffId', as: 'inventoryRequests', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+InventoryRequest.belongsTo(User, { foreignKey: 'staffId', as: 'staff', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+User.hasMany(InventoryRequest, { foreignKey: 'reviewedBy', as: 'reviewedInventoryRequests', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+InventoryRequest.belongsTo(User, { foreignKey: 'reviewedBy', as: 'reviewer', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+
+// Product/category -> ProductRequest. Product and category are optional for a create request.
+Product.hasMany(ProductRequest, { foreignKey: 'productId', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+ProductRequest.belongsTo(Product, { foreignKey: 'productId', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+Category.hasMany(ProductRequest, { foreignKey: 'categoryId', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+ProductRequest.belongsTo(Category, { foreignKey: 'categoryId', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+User.hasMany(ProductRequest, { foreignKey: 'staffId', as: 'productRequests', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+ProductRequest.belongsTo(User, { foreignKey: 'staffId', as: 'staff', onDelete: 'RESTRICT', onUpdate: 'CASCADE' });
+User.hasMany(ProductRequest, { foreignKey: 'reviewedBy', as: 'reviewedProductRequests', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+ProductRequest.belongsTo(User, { foreignKey: 'reviewedBy', as: 'reviewer', onDelete: 'SET NULL', onUpdate: 'CASCADE' });
+
 Favorite.belongsTo(Product, {
     foreignKey: 'productId'
 });
-
 
 //-------------------------------------- CART RELATIONSHIPS --------------------------------------
 // One Cart has many Cart Items

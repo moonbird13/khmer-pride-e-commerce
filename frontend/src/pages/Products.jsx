@@ -3,11 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import Button from '../components/Button/Button.jsx';
 import FilterSidebar from '../components/FilterSidebar/FilterSidebar.jsx';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import SectionHeader from '../components/SectionHeader';
 import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
 import '../pages/HomePage.css';
-import api from '../services/api';
+import api, { addFavorite, getFavorites, removeFavorite } from '../services/api';
 import './ShopPage.css';
 
 const PAGE_SIZE = 6;
@@ -35,6 +36,8 @@ export default function Products() {
   const [page, setPage] = useState(1);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadData = async () => {
@@ -84,6 +87,24 @@ export default function Products() {
     }
   }, [categories, searchParams, selectedCategory]);
 
+  useEffect(() => {
+    const loadFavorites = async () => {
+      if (!user || user.role !== 'customer') {
+        setFavoriteIds(new Set());
+        return;
+      }
+
+      try {
+        const favorites = await getFavorites();
+        setFavoriteIds(new Set(favorites.map((item) => String(item.id))));
+      } catch (error) {
+        console.error('Failed to load favorite ids.', error);
+      }
+    };
+
+    loadFavorites();
+  }, [user]);
+
   const filteredProducts = useMemo(() => {
     let nextProducts = products
       .filter((product) => (product.name || '').toLowerCase().includes(search.toLowerCase()) || (product.description || '').toLowerCase().includes(search.toLowerCase()))
@@ -103,6 +124,38 @@ export default function Products() {
 
   const { addToCart } = useCart();
   const handleAddToCart = (product, quantity) => addToCart(product, quantity);
+
+  const handleToggleFavorite = async (product) => {
+    if (!product?.id || !user || user.role !== 'customer') return;
+
+    const productId = String(product.id);
+    const isFavorited = favoriteIds.has(productId);
+
+    setFavoriteIds((current) => {
+      const next = new Set(current);
+      if (isFavorited) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+
+    try {
+      if (isFavorited) {
+        await removeFavorite(product.id);
+      } else {
+        await addFavorite(product.id);
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Unable to save this favorite. Please log in again and retry.';
+      console.error('Failed to update favorite.', error);
+      window.alert(message);
+      setFavoriteIds((current) => {
+        const next = new Set(current);
+        if (isFavorited) next.add(productId);
+        else next.delete(productId);
+        return next;
+      });
+    }
+  };
 
   // show all categories in the "Browse categories" section
   const visibleCategories = useMemo(() => categories, [categories]);
@@ -150,7 +203,13 @@ export default function Products() {
 
           <div className="product-grid">
             {visibleProducts.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={favoriteIds.has(String(product.id))}
+              />
             ))}
           </div>
 

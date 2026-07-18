@@ -17,38 +17,57 @@ export const createOrder = async ({
   userId,
   addressId,
   items,
-  paymentMethod
+  paymentMethod,
+  addressData,
+  total
 }) => {
 
-  // Get shipping address snapshot
-  const address = await findAddressById(addressId);
-  if (!address) {
-    throw new Error("Address not found");
+  let addressSnapshot = null;
+
+  if (addressId) {
+    const address = await findAddressById(addressId);
+    if (!address) {
+      throw new Error("Address not found");
+    }
+
+    addressSnapshot = {
+      houseNumber: address.houseNumber,
+      street: address.street,
+      commune: address.commune,
+      district: address.district,
+      province: address.province
+    };
+  } else if (addressData) {
+    addressSnapshot = {
+      houseNumber: addressData.houseNumber ?? '',
+      street: addressData.street ?? addressData.shippingAddress ?? '',
+      commune: addressData.commune ?? '',
+      district: addressData.district ?? '',
+      province: addressData.province ?? addressData.shippingCity ?? ''
+    };
   }
 
+  const normalizedPaymentMethod = paymentMethod === 'cash'
+    ? 'Cash on Delivery'
+    : paymentMethod || 'Cash on Delivery';
+
   // Calculate total
-  const total = items.reduce((sum, item) => {
+  const orderTotal = Number(total ?? items.reduce((sum, item) => {
 
     const subtotal = Number(item.price) * Number(item.quantity);
     return sum + subtotal;
 
-  }, 0);
+  }, 0));
 
 
   // Create order record
   const order = await createOrderRecord({
 
     userId,
-    total,
-    address: {
-
-      houseNumber: address.houseNumber,
-      street: address.street,
-      commune: address.commune,
-      district: address.district,
-      province: address.province
-
-    }
+    total: orderTotal,
+    address: addressSnapshot,
+    paymentMethod: normalizedPaymentMethod,
+    paymentStatus: 'Unpaid'
 
   });
 
@@ -183,6 +202,8 @@ const formatOrder = (order, items = []) => {
     items,
     total: Number(order.totalAmount),
     status: order.orderStatus,
+    paymentMethod: order.paymentMethod,
+    paymentStatus: order.paymentStatus,
     createdAt: order.orderDate
 
   };

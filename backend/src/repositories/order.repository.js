@@ -1,5 +1,5 @@
 import db from '../models/index.js';
-const { Order, Order_detail, Address } = db;
+const { Order, Order_detail } = db;
 
 //----------------------------------------------------
 // Select Or Search
@@ -30,7 +30,10 @@ export const findOrderById = async(orderId)=>{
 //Create order record
 export const createOrderRecord = async ({
   userId,
-  total
+  total,
+  address,
+  paymentMethod,
+  paymentStatus = 'Unpaid'
 }) => {
 
   return await Order.create({
@@ -38,11 +41,13 @@ export const createOrderRecord = async ({
     orderDate: new Date(),
     totalAmount: Number(total),
     orderStatus: "Pending",
-    shippingHouseNumber: Address.houseNumber,
-    shippingStreet: Address.street,
-    shippingCommune: Address.commune,
-    shippingDistrict: Address.district,
-    shippingProvince: Address.province
+    shippingHouseNumber: address?.houseNumber ?? '',
+    shippingStreet: address?.street ?? '',
+    shippingCommune: address?.commune ?? '',
+    shippingDistrict: address?.district ?? '',
+    shippingProvince: address?.province ?? '',
+    paymentMethod,
+    paymentStatus
   });
 };
 

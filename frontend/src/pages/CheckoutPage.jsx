@@ -19,10 +19,10 @@ export default function CheckoutPage() {
   const shipping = 6;
   const total = subtotal + shipping;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    placeOrder({ fullName, email, address, city, paymentMethod });
-    navigate('/order-success');
+    const createdOrder = await placeOrder({ fullName, email, address, city, paymentMethod });
+    navigate('/order-success', { state: { order: createdOrder } });
   };
 
   return (

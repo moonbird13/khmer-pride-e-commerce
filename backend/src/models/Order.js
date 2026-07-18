@@ -54,6 +54,17 @@ const Order = sequelize.define('Order', {
         type: DataTypes.STRING,
         allowNull: false,
         field: 'shipping_province'
+    },
+    paymentMethod: {
+        type: DataTypes.ENUM('Cash on Delivery'),
+        allowNull: false,
+        field: 'payment_method'
+    },
+    paymentStatus: {
+        type: DataTypes.ENUM('Paid', 'Unpaid'),
+        allowNull: false,
+        defaultValue: 'Unpaid',
+        field: 'payment_status'
     }
 }, {
     tableName: 'Orders',

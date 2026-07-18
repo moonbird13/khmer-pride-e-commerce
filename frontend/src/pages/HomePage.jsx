@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import Button from '../components/Button/Button.jsx';
 import CategoryCard from '../components/CategoryCard/CategoryCard.jsx';
@@ -7,7 +8,7 @@ import Newsletter from '../components/Newsletter/Newsletter.jsx';
 import ProductCard from '../components/ProductCard/ProductCard.jsx';
 import ReviewCard from '../components/ReviewCard/ReviewCard.jsx';
 import SectionHeader from '../components/SectionHeader';
-import api from '../services/api';
+import api, { addFavorite, getFavorites, removeFavorite } from '../services/api';
 import './HomePage.css';
 
 const normalizeProducts = (payload) => {
@@ -33,6 +34,8 @@ const reviews = [
 export default function HomePage() {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState(new Set());
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadData = async () => {
@@ -90,8 +93,56 @@ export default function HomePage() {
   const visibleBestSellers = useMemo(() => bestSellers.slice(0, 3), [bestSellers]);
   const visibleNewArrivals = useMemo(() => newArrivals.slice(0, 3), [newArrivals]);
 
+  useEffect(() => {
+    const loadCustomerFavorites = async () => {
+      if (!user || user.role !== 'customer') {
+        setFavoriteIds(new Set());
+        return;
+      }
+
+      try {
+        const favorites = await getFavorites();
+        setFavoriteIds(new Set(favorites.map((item) => String(item.id))));
+      } catch (error) {
+        console.error('Failed to load favorites:', error);
+      }
+    };
+
+    loadCustomerFavorites();
+  }, [user]);
+
   const { addToCart } = useCart();
   const handleAddToCart = (product, quantity) => addToCart(product, quantity);
+
+  const handleToggleFavorite = async (product) => {
+    if (!user || user.role !== 'customer' || !product?.id) return;
+
+    const productId = String(product.id);
+    const isFavorited = favoriteIds.has(productId);
+
+    setFavoriteIds((current) => {
+      const next = new Set(current);
+      if (isFavorited) next.delete(productId);
+      else next.add(productId);
+      return next;
+    });
+
+    try {
+      if (isFavorited) {
+        await removeFavorite(product.id);
+      } else {
+        await addFavorite(product.id);
+      }
+    } catch (error) {
+      console.error('Failed to update favorite:', error);
+      setFavoriteIds((current) => {
+        const next = new Set(current);
+        if (isFavorited) next.add(productId);
+        else next.delete(productId);
+        return next;
+      });
+    }
+  };
 
   return (
     <main className="home-page">
@@ -121,7 +172,13 @@ export default function HomePage() {
         <SectionHeader title="Featured products" subtitle="Popular picks" />
         <div className="product-grid">
           {visibleFeatured.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={handleToggleFavorite}
+              isFavorite={favoriteIds.has(String(product.id))}
+            />
           ))}
         </div>
       </section>
@@ -139,7 +196,13 @@ export default function HomePage() {
         <SectionHeader title="Best sellers" subtitle="Top-rated favourites" />
         <div className="product-grid">
           {visibleBestSellers.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={handleToggleFavorite}
+              isFavorite={favoriteIds.has(String(product.id))}
+            />
           ))}
         </div>
       </section>
@@ -148,7 +211,13 @@ export default function HomePage() {
         <SectionHeader title="New arrivals" subtitle="Fresh from the market" />
         <div className="product-grid">
           {visibleNewArrivals.map((product) => (
-            <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+              onToggleFavorite={handleToggleFavorite}
+              isFavorite={favoriteIds.has(String(product.id))}
+            />
           ))}
         </div>
       </section>

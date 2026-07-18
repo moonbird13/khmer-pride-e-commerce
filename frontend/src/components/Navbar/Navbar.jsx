@@ -25,7 +25,7 @@ export default function Navbar() {
   }
 
   if (user && user.role === 'admin') {
-    navLinks.push({ to: '/admin-dashboard', label: 'Admin' });
+    navLinks.push({ to: '/admin-portal', label: 'Admin' });
   }
 
   const handleSearchSubmit = (event) => {
@@ -67,6 +67,9 @@ export default function Navbar() {
             {/* change /whishlist to /favorites */}
             <Link className="navbar-action-button" to="/favorites" aria-label="Wishlist">
               <span aria-hidden="true">♡</span>
+            </Link>
+            <Link className="navbar-action-button" to="/orders" aria-label="My Orders">
+              <span aria-hidden="true">📦</span>
             </Link>
             <Link className="navbar-action-button" to="/cart" aria-label="Cart">
               <span aria-hidden="true">🛒</span>
