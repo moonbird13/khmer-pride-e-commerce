@@ -92,7 +92,13 @@ export default function ProductDetailPage() {
 
       <section className="product-detail-page__layout">
         <div className="product-detail-page__gallery">
-          <div className="product-detail-page__gallery-main">{product.image || product.category?.name || 'Product'}</div>
+          <div className="product-detail-page__gallery-main">
+            {product.image ? (
+              <img src={product.image} alt={product.name || 'Product image'} />
+            ) : (
+              product.category?.name || 'Product'
+            )}
+          </div>
           <div className="product-detail-page__gallery-thumbs" role="list">
             <button type="button" className="product-detail-page__gallery-thumb is-active">{product.name}</button>
           </div>

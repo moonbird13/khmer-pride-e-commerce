@@ -61,6 +61,14 @@ const resetPassword = async (token, newPassword) => {
   return data;
 };
 
+const changePassword = async (currentPassword, newPassword) => {
+  const { data } = await api.post('/auth/change-password', {
+    currentPassword,
+    newPassword,
+  });
+  return data;
+};
+
 const getCart = async () => {
   const { data } = await api.get('/cart');
   return data;
@@ -73,6 +81,15 @@ const addToCartItem = async (productId, quantity = 1) => {
 
 const updateCartItem = async (productId, quantity) => {
   const { data } = await api.patch(`/cart/items/${productId}`, { quantity });
+  return data;
+};
+
+const updateProfile = async (formData) => {
+  const { data } = await api.patch('/auth/profile', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
   return data;
 };
 
@@ -131,6 +148,7 @@ export {
   logout,
   forgotPassword,
   resetPassword,
+  changePassword,
   getCart,
   addToCartItem,
   updateCartItem,
@@ -141,6 +159,7 @@ export {
   getFavorites,
   addFavorite,
   removeFavorite,
+  updateProfile,
 };
 
 export default api;

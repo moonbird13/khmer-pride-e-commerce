@@ -73,9 +73,18 @@ export default function Navbar() {
               {cartCount > 0 ? <span className="navbar-cart-count">({cartCount})</span> : null}
             </Link>
             {user ? (
-              <button type="button" className="navbar-pill navbar-pill--primary" onClick={logout}>
-                Logout
-              </button>
+              <>
+                <Link className="navbar-action-button navbar-profile-button" to="/profile" aria-label="Profile">
+                  {user.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="Profile" className="navbar-profile-image" />
+                  ) : (
+                    <span aria-hidden="true">👤</span>
+                  )}
+                </Link>
+                <button type="button" className="navbar-pill navbar-pill--primary" onClick={logout}>
+                  Logout
+                </button>
+              </>
             ) : (
               <Link className="navbar-pill navbar-pill--primary" to="/login">
                 Sign in

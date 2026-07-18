@@ -13,7 +13,13 @@ export default function ProductCard({ product, onAddToCart, className = '' }) {
 
   return (
     <article className={`ui-card ui-product-card ${className}`.trim()}>
-      <div className="ui-product-card__image">{image || categoryName || 'Featured'}</div>
+      <div className="ui-product-card__image">
+        {image ? (
+          <img src={image} alt={name || 'Product image'} />
+        ) : (
+          categoryName || 'Featured'
+        )}
+      </div>
       <div className="ui-product-card__content">
         <p className="ui-card__meta">{categoryName || 'Featured product'}</p>
         <h3>{name}</h3>

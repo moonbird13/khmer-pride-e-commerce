@@ -32,6 +32,7 @@ const sanitizeUser = (user) => ({
   email: user.email,
   phone: user.phone,
   role: user.role,
+  avatarUrl: user.avatarUrl || null,
 });
 
 const getUserByEmail = async (email) => {

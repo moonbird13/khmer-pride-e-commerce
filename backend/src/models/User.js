@@ -15,6 +15,11 @@ const User = sequelize.define('User', {
     defaultValue: 'default-avatar.png',
     field: "avatar_url",
   },
+  avatarPublicId: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: "avatar_public_id",
+  },
   fullName: {
     type: DataTypes.STRING,
     allowNull: false,

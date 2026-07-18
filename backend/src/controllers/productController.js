@@ -167,11 +167,9 @@ const updateProductHandler = async (req, res) => {
     let publicId = null;
 
     if (req.file) {
-      const result = await uploadToCloudinary(
-        req.file.buffer,
-        "products"
-      );
-
+      const result = await uploadToCloudinary(req.file.buffer, {
+        folder: 'khmer-pride/products',
+      });
       imageUrl = result.secure_url;
       publicId = result.public_id;
 

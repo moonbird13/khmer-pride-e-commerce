@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { getProducts, getCategories } from '../../services/api';
+import api, { getProducts, getCategories } from '../../services/api';
 import './ProductManagement.css';
 
 const normalizeCategoryList = (payload) => {
@@ -29,6 +29,7 @@ export default function ProductManagement() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [submitError, setSubmitError] = useState('');
   const [formData, setFormData] = useState({
     productName: '',
     productDescription: '',
@@ -118,6 +119,7 @@ export default function ProductManagement() {
     setIsModalOpen(false);
     setEditingProduct(null);
     setImagePreview(null);
+    setSubmitError('');
     setFormData({
       productName: '',
       productDescription: '',
@@ -142,33 +144,20 @@ export default function ProductManagement() {
     }
 
     try {
-      let response;
+      console.log('ProductManagement handleSubmit', { editingProduct, formData });
+      setSubmitError('');
       if (editingProduct) {
-        response = await fetch(`http://localhost:3001/api/products/${editingProduct.id}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: data,
-        });
+        await api.put(`/products/${editingProduct.id}`, data);
       } else {
-        response = await fetch('http://localhost:3001/api/products', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-          body: data,
-        });
+        await api.post('/products', data);
       }
 
-      if (response.ok) {
-        fetchProducts();
-        handleCloseModal();
-      } else {
-        console.error('Error saving product');
-      }
+      fetchProducts();
+      handleCloseModal();
     } catch (error) {
-      console.error('Error:', error);
+      const errorMessage = error?.response?.data?.message || error?.message || 'Unable to save product.';
+      console.error('Error:', errorMessage, error);
+      setSubmitError(errorMessage);
     }
   };
 
@@ -176,18 +165,8 @@ export default function ProductManagement() {
     if (!window.confirm('Are you sure you want to delete this product?')) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-
-      if (response.ok) {
-        fetchProducts();
-      } else {
-        console.error('Error deleting product');
-      }
+      await api.delete(`/products/${productId}`);
+      fetchProducts();
     } catch (error) {
       console.error('Error:', error);
     }
@@ -333,6 +312,9 @@ export default function ProductManagement() {
                   ))}
                 </select>
               </div>
+              {submitError && (
+                <div className="form-error">{submitError}</div>
+              )}
 
               <div className="form-row">
                 <div className="form-group">

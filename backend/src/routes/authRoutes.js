@@ -1,5 +1,6 @@
 import express from 'express';
-import { register, login, staffLogin, refresh, logout, verifyEmail, forgotPassword, resetPassword, changePassword, profile } from '../controllers/authController.js';
+import upload from '../middleware/upload.js';
+import { register, login, staffLogin, refresh, logout, verifyEmail, forgotPassword, resetPassword, changePassword, profile, updateProfile } from '../controllers/authController.js';
 import { authenticate } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -14,5 +15,6 @@ router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', resetPassword);
 router.post('/change-password', authenticate, changePassword);
 router.get('/profile', authenticate, profile);
+router.patch('/profile', authenticate, upload.single('avatar'), updateProfile);
 
 export default router;

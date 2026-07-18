@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import {
   register as registerService,
@@ -10,6 +11,9 @@ import {
   changePassword as changePasswordService,
   // no export change in service; controller enforces staff role
 } from '../services/authService.js';
+import * as userRepository from '../repositories/user.repository.js';
+import uploadToCloudinary from '../utils/uploadToCloudinary.js';
+import cloudinary from '../config/cloudinary.js';
 import User from '../models/User.js';
 
 dotenv.config();
@@ -149,11 +153,97 @@ const profile = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       role: user.role,
+      avatarUrl: user.avatarUrl,
     };
 
     return res.status(200).json(result);
   } catch (error) {
     return res.status(500).json({ message: 'Unable to load profile.' });
+  }
+};
+
+const updateProfile = async (req, res) => {
+  try {
+    const payload = req.user || {};
+    if (!payload.email && !payload.id) {
+      return res.status(401).json({ message: 'Authentication required.' });
+    }
+
+    const user = await User.findByPk(payload.id || payload.id);
+    if (!user) return res.status(404).json({ message: 'User not found.' });
+
+    const updates = {};
+    if (req.body.fullName) {
+      updates.fullName = String(req.body.fullName).trim();
+    }
+
+    if (req.file) {
+      const oldPublicId = user.avatarPublicId;
+      const result = await uploadToCloudinary(req.file.buffer, {
+        folder: 'khmer-pride/avatars',
+        public_id: `user_${user.userId ?? user.id}`,
+        overwrite: true,
+      });
+
+      updates.avatarUrl = result.secure_url;
+      updates.avatarPublicId = result.public_id;
+
+      if (oldPublicId && oldPublicId !== result.public_id) {
+        await cloudinary.uploader.destroy(oldPublicId, { resource_type: 'image' });
+      }
+    }
+
+    const email = req.body.email ? String(req.body.email).trim().toLowerCase() : null;
+    const phone = req.body.phone ? String(req.body.phone).trim() : null;
+    const currentPassword = req.body.currentPassword ? String(req.body.currentPassword) : null;
+
+    if ((email && email !== user.email) || (phone && phone !== user.phone)) {
+      if (!currentPassword) {
+        return res.status(400).json({ message: 'Current password is required to update email or phone.' });
+      }
+
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: 'Current password is incorrect.' });
+      }
+
+      if (email && email !== user.email) {
+        const existingEmailUser = await userRepository.findUserByEmail(email);
+        if (existingEmailUser && existingEmailUser.userId !== user.userId) {
+          return res.status(409).json({ message: 'Email is already in use.' });
+        }
+        updates.email = email;
+      }
+
+      if (phone && phone !== user.phone) {
+        const existingPhoneUser = await userRepository.findUserByIdentifier(phone);
+        if (existingPhoneUser && existingPhoneUser.userId !== user.userId) {
+          return res.status(409).json({ message: 'Phone number is already in use.' });
+        }
+        updates.phone = phone;
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ message: 'No profile data to update.' });
+    }
+
+    await userRepository.updateUser(user.userId ?? user.id, updates);
+    const updatedUser = await User.findByPk(user.userId ?? user.id);
+
+    return res.status(200).json({
+      message: 'Profile updated successfully.',
+      user: {
+        id: updatedUser.userId ?? updatedUser.id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+        role: updatedUser.role,
+        avatarUrl: updatedUser.avatarUrl,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to update profile.' });
   }
 };
 
@@ -169,4 +259,5 @@ export {
   // Staff login handler: allow only staff/admin roles
   staffLogin,
   profile,
+  updateProfile,
 };

@@ -31,6 +31,14 @@
   place-items: center;
   background: linear-gradient(135deg, #fff2e3 0%, #f7dfc0 100%);
   font-size: 4rem;
+  overflow: hidden;
+}
+
+.product-detail-page__gallery-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .product-detail-page__gallery-thumbs {
