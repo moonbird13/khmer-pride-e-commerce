@@ -22,17 +22,23 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: (origin, callback) => {
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'];
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
@@ -155,8 +161,11 @@ const startServer = async () => {
     await db.sequelize.authenticate();
     await db.sequelize.sync();
     await seedInitialData();
-    app.listen(PORT, () => {
-      console.log(`Khmer Pride backend running on http://localhost:${PORT}`);
+    const HOST = process.env.HOST || '0.0.0.0';
+    app.listen(PORT, HOST, () => {
+      console.log(
+        `Khmer Pride backend running on http://${HOST}:${PORT} (PORT env: ${process.env.PORT || 'undefined'})`
+      );
     });
   } catch (error) {
     console.error(error);
