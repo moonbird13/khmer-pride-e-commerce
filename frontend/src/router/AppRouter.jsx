@@ -12,6 +12,7 @@ import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import ResetPasswordPage from '../pages/ResetPasswordPage';
 import VerifyEmailPage from '../pages/VerifyEmailPage';
 import ProfilePage from '../pages/ProfilePage';
+import SettingsPage from '../pages/SettingsPage';
 import OrdersPage from '../pages/OrdersPage';
 import FavoritesPage from '../pages/FavoritesPage';
 import AdminDashboardPage from '../pages/AdminDashboardPage';
@@ -52,14 +53,14 @@ export default function AppRouter() {
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/contact" element={<ContactPage />} />
-      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/verify-email/:token?" element={<VerifyEmailPage />} />
 
       {/* Protected Routes - Customer */}
       <Route
         path="/cart"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={['customer']}>
             <CartPage />
           </ProtectedRoute>
         }
@@ -67,12 +68,12 @@ export default function AppRouter() {
       <Route
         path="/checkout"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={['customer']}>
             <CheckoutPage />
           </ProtectedRoute>
         }
       />
-      <Route path="/order-success" element={<OrderSuccessPage />} />
+      <Route path="/order-success" element={<ProtectedRoute requiredRole={['customer']}><OrderSuccessPage /></ProtectedRoute>} />
       <Route
         path="/profile"
         element={
@@ -81,10 +82,11 @@ export default function AppRouter() {
           </ProtectedRoute>
         }
       />
+      <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
       <Route
         path="/orders"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute requiredRole={['customer']}>
             <OrdersPage />
           </ProtectedRoute>
         }

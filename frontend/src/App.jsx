@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import AppRouter from './router/AppRouter';
@@ -10,14 +10,16 @@ import './App.css';
 
 function AppContent() {
   const { toast, setToast } = useCart();
+  const location = useLocation();
+  const isPortalPage = location.pathname === '/staff-portal' || location.pathname === '/admin-portal';
 
   return (
     <div className="app-shell">
-      <Navbar />
+      {!isPortalPage ? <Navbar /> : null}
       <main className="main-content">
         <AppRouter />
       </main>
-      <Footer />
+      {!isPortalPage ? <Footer /> : null}
       {toast ? <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} /> : null}
     </div>
   );

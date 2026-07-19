@@ -7,6 +7,9 @@ import {
 } from "../repositories/order.repository.js";
 
 import { findAddressById } from "../repositories/address.repository.js";
+import db from '../models/index.js';
+
+const ORDER_STATUSES = ['Pending', 'Processing', 'OutForDelivery', 'Delivered', 'Cancelled'];
 
 
 //----------------------------------------------------
@@ -109,7 +112,7 @@ export const listOrders = async(userId)=>{
   const orders = await findOrders(userId);
 
   return orders.map(order =>
-    formatOrder(order)
+    formatOrder(order, order.Order_details || [])
   );
 
 };
@@ -173,17 +176,27 @@ export const updateOrderStatus = async(
   orderId,
   status
 )=>{
-
-  const order = await findOrderById(orderId);
-
-  if(!order){
-    return null;
-  }
-
-  order.orderStatus = status;
-  await saveOrder(order);
-
-  return formatOrder(order);
+  if (!ORDER_STATUSES.includes(status)) throw new Error('Invalid order status.');
+  return db.sequelize.transaction(async (transaction) => {
+    const order = await db.Order.findByPk(Number(orderId), {
+      include: [{ model: db.Order_detail }],
+      lock: transaction.LOCK.UPDATE,
+      transaction,
+    });
+    if (!order) return null;
+    if (!order.inventoryDeducted && ['Processing', 'OutForDelivery', 'Delivered'].includes(status)) {
+      for (const item of order.Order_details) {
+        const inventory = await db.Inventory.findOne({ where: { productId: item.productId }, lock: transaction.LOCK.UPDATE, transaction });
+        if (!inventory || Number(inventory.stockQuantity) < Number(item.quantity)) {
+          throw new Error('Insufficient stock to process this order.');
+        }
+        await inventory.update({ stockQuantity: Number(inventory.stockQuantity) - Number(item.quantity), lastUpdated: new Date() }, { transaction });
+      }
+      await order.update({ inventoryDeducted: true }, { transaction });
+    }
+    await order.update({ orderStatus: status }, { transaction });
+    return formatOrder(order, order.Order_details);
+  });
 
 };
 
@@ -199,7 +212,7 @@ const formatOrder = (order, items = []) => {
 
     id: order.orderId,
     userId: order.userId,
-    items,
+    items: items.map((item) => ({ productId: item.productId, quantity: item.quantity, price: Number(item.unitPrice), subtotal: Number(item.subTotal) })),
     total: Number(order.totalAmount),
     status: order.orderStatus,
     paymentMethod: order.paymentMethod,

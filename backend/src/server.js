@@ -14,6 +14,7 @@ import orderRoutes from './routes/orderRoutes.js';
 import favoriteRoute from "./routes/favoriteRoute.js";
 import requestRoutes from './routes/requestRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import reviewRoutes from './routes/reviewRoutes.js';
 
 
 dotenv.config();
@@ -58,6 +59,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/reviews', reviewRoutes);
 app.use("/api/favorites",favoriteRoute);
 app.use('/api/requests', requestRoutes);
 
@@ -152,7 +154,15 @@ const startServer = async () => {
   try {
     await db.sequelize.authenticate();
     if (process.env.NODE_ENV !== 'production') {
-      await db.sequelize.sync({ alter: true });
+      // Disable foreign key checks to allow dropping tables with constraints
+      await db.sequelize.query('SET FOREIGN_KEY_CHECKS=0');
+      try {
+        // Use force: true in development to drop and recreate tables fresh
+        await db.sequelize.sync({ force: true });
+      } finally {
+        // Re-enable foreign key checks
+        await db.sequelize.query('SET FOREIGN_KEY_CHECKS=1');
+      }
     }
     await seedInitialData();
     app.listen(PORT, () => {

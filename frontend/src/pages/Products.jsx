@@ -30,7 +30,7 @@ const normalizeCategories = (payload) => {
 export default function Products() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState(() => searchParams.get('search') || '');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(() => searchParams.get('category') || 'all');
   const [maxPrice, setMaxPrice] = useState(1000);
   const [sortBy, setSortBy] = useState('newest');
   const [page, setPage] = useState(1);
@@ -67,6 +67,7 @@ export default function Products() {
           isBestSeller: Boolean(product.isBestSeller),
           isNewArrival: Boolean(product.isNewArrival),
           image: product.image ?? product.imageUrl ?? null,
+          quantity: Number(product.quantity ?? 0),
         })));
       } catch (error) {
         console.error('Failed to load products data.', error);
@@ -82,7 +83,7 @@ export default function Products() {
 
   useEffect(() => {
     const cat = searchParams.get('category');
-    if (cat && categories.some((c) => c.id === cat) && selectedCategory !== cat) {
+    if (cat && categories.some((c) => String(c.id) === String(cat)) && selectedCategory !== cat) {
       setSelectedCategory(cat);
     }
   }, [categories, searchParams, selectedCategory]);
@@ -227,7 +228,7 @@ export default function Products() {
         <SectionHeader title="Browse categories" subtitle="Explore curated products" />
         <div className="category-grid">
           {visibleCategories.map((category) => (
-            <CategoryCard key={category.id} category={category} />
+            <CategoryCard key={category.id} category={category} compact />
           ))}
         </div>
       </section>

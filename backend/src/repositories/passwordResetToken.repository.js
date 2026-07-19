@@ -1,6 +1,19 @@
 import PasswordResetToken from "../models/PasswordResetToken.js";
 
 export const createPassToken = async (tokenData) => {
+  const existingToken = await PasswordResetToken.findOne({
+    where: { userId: tokenData.userId },
+  });
+
+  if (existingToken) {
+    await existingToken.update({
+      token: tokenData.token,
+      expiresAt: tokenData.expiresAt,
+      isUsed: false,
+    });
+    return existingToken;
+  }
+
   return await PasswordResetToken.create(tokenData);
 };
 

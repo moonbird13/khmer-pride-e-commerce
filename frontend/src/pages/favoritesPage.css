@@ -8,11 +8,7 @@
 .favorites-hero {
   height: 230px;
   border-radius: 30px;
-  background: linear-gradient(
-    120deg,
-    #8b5a3c,
-    #c8956b
-  );
+  background: linear-gradient(120deg, #f2a93b, #ffc463);
 
   display: flex;
   align-items: center;

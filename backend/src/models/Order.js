@@ -21,7 +21,7 @@ const Order = sequelize.define('Order', {
         field: 'total_amount'
     },
     orderStatus: {
-        type: DataTypes.ENUM('Pending', 'Paid', 'Processing', 'Shipped', 'Delivered', 'Cancelled'),
+        type: DataTypes.ENUM('Pending', 'Processing', 'OutForDelivery', 'Delivered', 'Cancelled'),
         allowNull: false,
         field: 'order_status'
     },
@@ -65,6 +65,12 @@ const Order = sequelize.define('Order', {
         allowNull: false,
         defaultValue: 'Unpaid',
         field: 'payment_status'
+    },
+    inventoryDeducted: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+        field: 'inventory_deducted'
     }
 }, {
     tableName: 'Orders',

@@ -12,6 +12,7 @@ export const findOrders = async(userId)=>{
 
   return await Order.findAll({
     where,
+    include: [{ model: Order_detail }],
     order:[["orderId","DESC"]]
   });
 
@@ -19,7 +20,7 @@ export const findOrders = async(userId)=>{
 
 //Find order by id
 export const findOrderById = async(orderId)=>{
-  return await Order.findByPk(Number(orderId));
+  return await Order.findByPk(Number(orderId), { include: [{ model: Order_detail }] });
 }
 
 

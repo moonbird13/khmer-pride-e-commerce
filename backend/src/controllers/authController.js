@@ -1,4 +1,3 @@
-import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import {
   register as registerService,
@@ -30,11 +29,14 @@ const register = async (req, res) => {
 const login = async (req, res) => {
   try {
     const result = await loginService(req.body);
+    if (['staff', 'admin'].includes(String(result.user?.role).toLowerCase())) {
+      return res.status(403).json({ message: 'Staff and admin accounts must sign in at /staff-login.' });
+    }
     res.cookie('refreshToken', result.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -63,7 +65,7 @@ const staffLogin = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
@@ -128,6 +130,7 @@ const changePassword = async (req, res) => {
   try {
     const result = await changePasswordService({
       userId: req.user.id,
+      role: req.user.role,
       currentPassword: req.body.currentPassword,
       newPassword: req.body.newPassword,
     });
@@ -194,34 +197,12 @@ const updateProfile = async (req, res) => {
     }
 
     const email = req.body.email ? String(req.body.email).trim().toLowerCase() : null;
-    const phone = req.body.phone ? String(req.body.phone).trim() : null;
-    const currentPassword = req.body.currentPassword ? String(req.body.currentPassword) : null;
-
-    if ((email && email !== user.email) || (phone && phone !== user.phone)) {
-      if (!currentPassword) {
-        return res.status(400).json({ message: 'Current password is required to update email or phone.' });
+    if (email && email !== user.email) {
+      const existingEmailUser = await userRepository.findUserByEmail(email);
+      if (existingEmailUser && existingEmailUser.userId !== user.userId) {
+        return res.status(409).json({ message: 'Email is already in use.' });
       }
-
-      const isMatch = await bcrypt.compare(currentPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ message: 'Current password is incorrect.' });
-      }
-
-      if (email && email !== user.email) {
-        const existingEmailUser = await userRepository.findUserByEmail(email);
-        if (existingEmailUser && existingEmailUser.userId !== user.userId) {
-          return res.status(409).json({ message: 'Email is already in use.' });
-        }
-        updates.email = email;
-      }
-
-      if (phone && phone !== user.phone) {
-        const existingPhoneUser = await userRepository.findUserByIdentifier(phone);
-        if (existingPhoneUser && existingPhoneUser.userId !== user.userId) {
-          return res.status(409).json({ message: 'Phone number is already in use.' });
-        }
-        updates.phone = phone;
-      }
+      updates.email = email;
     }
 
     if (Object.keys(updates).length === 0) {

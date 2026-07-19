@@ -6,9 +6,10 @@ const requestTypeOptions = [
   { value: 'Inventory', label: 'Inventory Restock' },
   { value: 'Create', label: 'Create Product' },
   { value: 'Delete', label: 'Delete Product' },
+  { value: 'Price', label: 'Change Product Price' },
 ];
 
-export default function StaffRequests() {
+export default function StaffRequests({ initialInventoryProduct = null }) {
   const [requestType, setRequestType] = useState('Inventory');
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -33,6 +34,16 @@ export default function StaffRequests() {
     fetchCategories();
     fetchRequests();
   }, []);
+
+  useEffect(() => {
+    if (!initialInventoryProduct) return;
+    setRequestType('Inventory');
+    setFormValues((previous) => ({
+      ...previous,
+      productId: initialInventoryProduct.id || initialInventoryProduct.productId || '',
+      currentStock: Number(initialInventoryProduct.quantity || 0),
+    }));
+  }, [initialInventoryProduct]);
 
   const fetchProducts = async () => {
     try {
@@ -72,6 +83,15 @@ export default function StaffRequests() {
 
   const handleChange = (field, value) => {
     setFormValues((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleInventoryProductChange = (productId) => {
+    const product = products.find((item) => String(item.id || item.productId) === String(productId));
+    setFormValues((previous) => ({
+      ...previous,
+      productId,
+      currentStock: product ? Number(product.quantity || 0) : '',
+    }));
   };
 
   const resetForm = () => {
@@ -123,6 +143,13 @@ export default function StaffRequests() {
           payload.productId = formValues.productId;
         }
 
+        if (requestType === 'Price') {
+          Object.assign(payload, {
+            productId: formValues.productId,
+            productPrice: Number(formValues.productPrice),
+          });
+        }
+
         await api.post('/requests/products', payload);
       }
 
@@ -139,15 +166,38 @@ export default function StaffRequests() {
   const currentRequestLabel = useMemo(() => {
     if (requestType === 'Inventory') return 'Inventory request';
     if (requestType === 'Create') return 'Create product request';
-    return 'Delete product request';
+    if (requestType === 'Delete') return 'Delete product request';
+    return 'Price change request';
   }, [requestType]);
+
+  const adminUpdates = useMemo(() => (
+    [...requests.inventory, ...requests.products]
+      .filter((request) => request.status === 'Approved' || request.status === 'Rejected')
+      .sort((a, b) => new Date(b.reviewedAt || b.requestedAt) - new Date(a.reviewedAt || a.requestedAt))
+  ), [requests]);
 
   return (
     <div className="staff-requests">
       <div className="panel-header">
         <h2>Staff Request Center</h2>
-        <p>Submit staff requests for inventory restock or product creation and deletion.</p>
+        <p>Submit requests for stock, product creation or deletion, and price changes. An administrator must approve them before the catalog is updated.</p>
       </div>
+
+      {adminUpdates.length > 0 && (
+        <section className="admin-updates" aria-label="Admin request updates">
+          <h3>Admin updates</h3>
+          {adminUpdates.map((request) => {
+            const isApproved = request.status === 'Approved';
+            const productName = request.product?.productName || request.productName || 'your product request';
+            return (
+              <div className={`admin-update ${isApproved ? 'admin-update--approved' : 'admin-update--rejected'}`} key={`update-${request.inventoryRequestId || request.productRequestId || request.id}`}>
+                <strong>{isApproved ? 'Approved' : 'Rejected'}:</strong> Your request for <strong>{productName}</strong> was {isApproved ? 'approved and applied.' : 'rejected.'}
+                {request.reviewNote && <> Admin note: {request.reviewNote}</>}
+              </div>
+            );
+          })}
+        </section>
+      )}
 
       <form className="request-form" onSubmit={handleSubmit}>
         <div className="form-row request-type-row">
@@ -166,7 +216,7 @@ export default function StaffRequests() {
               <select
                 required
                 value={formValues.productId}
-                onChange={(e) => handleChange('productId', e.target.value)}
+                onChange={(e) => handleInventoryProductChange(e.target.value)}
               >
                 <option value="">Select a product</option>
                 {products.map((product) => (
@@ -183,8 +233,7 @@ export default function StaffRequests() {
                 type="number"
                 min="0"
                 value={formValues.currentStock}
-                onChange={(e) => handleChange('currentStock', e.target.value)}
-                required
+                readOnly
               />
             </div>
 
@@ -288,6 +337,37 @@ export default function StaffRequests() {
               ))}
             </select>
           </div>
+        )}
+
+        {requestType === 'Price' && (
+          <>
+            <div className="form-row">
+              <label>Product</label>
+              <select
+                required
+                value={formValues.productId}
+                onChange={(e) => handleChange('productId', e.target.value)}
+              >
+                <option value="">Select a product</option>
+                {products.map((product) => (
+                  <option key={product.productId || product.id} value={product.productId || product.id}>
+                    {product.productName || product.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-row">
+              <label>Requested price</label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={formValues.productPrice}
+                onChange={(e) => handleChange('productPrice', e.target.value)}
+                required
+              />
+            </div>
+          </>
         )}
 
         <div className="form-row">

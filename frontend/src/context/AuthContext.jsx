@@ -14,7 +14,32 @@ export function AuthProvider({ children }) {
     if (savedToken && savedUser) {
       setAuthToken(savedToken);
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      const savedProfile = JSON.parse(savedUser);
+      setUser(savedProfile);
+      api.get('/auth/profile')
+        .then(({ data }) => {
+          localStorage.setItem('khmer-pride-user', JSON.stringify(data));
+          setUser(data);
+        })
+        .catch(async () => {
+          try {
+            const { data: refreshed } = await api.post('/auth/refresh');
+            localStorage.setItem('khmer-pride-token', refreshed.accessToken);
+            setAuthToken(refreshed.accessToken);
+            setToken(refreshed.accessToken);
+            const { data: profile } = await api.get('/auth/profile');
+            localStorage.setItem('khmer-pride-user', JSON.stringify(profile));
+            setUser(profile);
+          } catch {
+            localStorage.removeItem('khmer-pride-token');
+            localStorage.removeItem('khmer-pride-user');
+            setAuthToken(null);
+            setToken(null);
+            setUser(null);
+          }
+        })
+        .finally(() => setLoading(false));
+      return;
     }
     setLoading(false);
   }, []);

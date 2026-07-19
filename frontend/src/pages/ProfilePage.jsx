@@ -1,306 +1,84 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { changePassword, getFavorites, updateProfile } from '../services/api';
+import { updateProfile } from '../services/api';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
   const { user, setUser } = useAuth();
   const fileInputRef = useRef(null);
-  const menuRef = useRef(null);
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [profileCurrentPassword, setProfileCurrentPassword] = useState('');
-  const [passwordCurrentPassword, setPasswordCurrentPassword] = useState('');
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || null);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [viewerOpen, setViewerOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const [passwordMessage, setPasswordMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [favoritesCount, setFavoritesCount] = useState(0);
 
   useEffect(() => {
-    if (user) {
-      setFullName(user.fullName || '');
-      setEmail(user.email || '');
-      setPhone(user.phone || '');
-      setAvatarPreview(user.avatarUrl || null);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  useEffect(() => {
-    if (user?.role === 'customer') {
-      const loadFavorites = async () => {
-        try {
-          const favorites = await getFavorites();
-          setFavoritesCount(Array.isArray(favorites) ? favorites.length : 0);
-        } catch (error) {
-          setFavoritesCount(0);
-        }
-      };
-      loadFavorites();
-    }
+    setFullName(user?.fullName || '');
+    setEmail(user?.email || '');
+    setAvatarPreview(user?.avatarUrl || null);
   }, [user]);
 
   const handleAvatarChange = (event) => {
-    const file = event.target.files?.[0] || null;
+    const file = event.target.files?.[0];
+    if (!file) return;
     setAvatarFile(file);
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-    }
+    setAvatarPreview(URL.createObjectURL(file));
   };
 
-  const handleAvatarClick = () => {
-    setMenuOpen((current) => !current);
-  };
-
-  const handleProfileSubmit = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     setMessage('');
-
     try {
-      const formData = new FormData();
-      formData.append('fullName', fullName);
-      formData.append('email', email);
-      formData.append('phone', phone);
-      formData.append('currentPassword', profileCurrentPassword);
-      if (avatarFile) {
-        formData.append('avatar', avatarFile);
+      const profileData = new FormData();
+      profileData.append('fullName', fullName);
+      profileData.append('email', email);
+      if (avatarFile) profileData.append('avatar', avatarFile);
+      const response = await updateProfile(profileData);
+      const updatedUser = response.user;
+      if (updatedUser) {
+        setUser(updatedUser);
+        localStorage.setItem('khmer-pride-user', JSON.stringify(updatedUser));
       }
-
-      const response = await updateProfile(formData);
       setMessage(response.message || 'Profile updated successfully.');
-      setProfileCurrentPassword('');
-      if (response.user && setUser) {
-        setUser(response.user);
-        localStorage.setItem('khmer-pride-user', JSON.stringify(response.user));
-        setAvatarPreview(response.user.avatarUrl || avatarPreview);
-      }
     } catch (error) {
-      setMessage(error?.response?.data?.message || error?.message || 'Unable to update profile.');
+      setMessage(error?.response?.data?.message || 'Unable to update profile.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handlePasswordSubmit = async (event) => {
-    event.preventDefault();
-    setPasswordLoading(true);
-    setPasswordMessage('');
-
-    if (!passwordCurrentPassword || !newPassword) {
-      setPasswordMessage('Current password and new password are required.');
-      setPasswordLoading(false);
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setPasswordMessage('New password and confirmation do not match.');
-      setPasswordLoading(false);
-      return;
-    }
-
-    try {
-      const response = await changePassword(passwordCurrentPassword, newPassword);
-      setPasswordMessage(response.message || 'Password updated successfully.');
-      setPasswordCurrentPassword('');
-      setNewPassword('');
-      setConfirmPassword('');
-    } catch (error) {
-      setPasswordMessage(error?.response?.data?.message || error?.message || 'Unable to update password.');
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
-
-  const handleViewAvatar = () => {
-    setViewerOpen(true);
-    setMenuOpen(false);
-  };
-
-  const handleUploadAvatar = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
-    }
-    setMenuOpen(false);
-  };
-
-  const isCustomer = user?.role === 'customer';
-
   return (
     <main className="profile-page page-shell">
-      <div className="profile-shell">
-        <div className="profile-header">
-          <div className="profile-avatar-menu" ref={menuRef}>
-            <button type="button" className="profile-avatar-wrap" onClick={handleAvatarClick}>
-              {avatarPreview ? (
-                <img className="profile-avatar" src={avatarPreview} alt="Profile avatar" />
-              ) : (
-                <div className="profile-avatar-placeholder">👤</div>
-              )}
+      <section className="profile-shell">
+        <header className="profile-header profile-header--with-settings">
+          <div className="profile-heading-with-avatar">
+            <button type="button" className="profile-avatar-wrap" onClick={() => fileInputRef.current?.click()} aria-label="Choose profile picture" title="Choose profile picture">
+              {avatarPreview ? <img className="profile-avatar" src={avatarPreview} alt="Profile avatar" /> : <span className="profile-avatar-placeholder" aria-hidden="true">👤</span>}
             </button>
-            {menuOpen ? (
-              <div className="profile-avatar-dropdown">
-                <button type="button" className="dropdown-item" onClick={handleViewAvatar}>
-                  View picture
-                </button>
-                <button type="button" className="dropdown-item" onClick={handleUploadAvatar}>
-                  Upload / update picture
-                </button>
-              </div>
-            ) : null}
+            <div>
+              <h1>{user?.fullName || fullName || 'My Profile'}</h1>
+              <p>Manage your profile details.</p>
+            </div>
           </div>
+          <Link className="profile-settings-link" to="/settings" aria-label="Account settings" title="Account settings">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.12 2.12-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V20.3h-3v-.08A1.7 1.7 0 0 0 10.68 18.66a1.7 1.7 0 0 0-1.88.34l-.06.06-2.12-2.12.06-.06A1.7 1.7 0 0 0 7.02 15a1.7 1.7 0 0 0-1.56-1.03h-.08v-3h.08A1.7 1.7 0 0 0 7.02 9.94 1.7 1.7 0 0 0 6.68 8.06L6.62 8 8.74 5.88l.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1.03-1.56V4.64h3v.08a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06L19.8 8l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03h.08v3h-.08A1.7 1.7 0 0 0 19.4 15Z" />
+            </svg>
+          </Link>
+        </header>
 
-          <div>
-            <h1>My Profile</h1>
-            <p>Manage your account settings and profile details.</p>
-          </div>
-        </div>
-
-        <form className="profile-form" onSubmit={handleProfileSubmit}>
+        <form className="profile-form" onSubmit={handleSubmit}>
           {message ? <div className="profile-message">{message}</div> : null}
-
-          <label className="profile-field">
-            <span>Name</span>
-            <input
-              type="text"
-              value={fullName}
-              onChange={(event) => setFullName(event.target.value)}
-              required
-            />
-          </label>
-
-          <label className="profile-field">
-            <span>Email</span>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="your.email@example.com"
-            />
-          </label>
-
-          <label className="profile-field">
-            <span>Phone number</span>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              placeholder="012345678"
-            />
-          </label>
-
-          <label className="profile-field">
-            <span>Current password</span>
-            <input
-              type="password"
-              value={profileCurrentPassword}
-              onChange={(event) => setProfileCurrentPassword(event.target.value)}
-              placeholder="Enter current password to save changes"
-            />
-          </label>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleAvatarChange}
-            className="profile-file-input"
-          />
-
-          <button type="submit" className="ui-btn ui-btn--primary" disabled={loading}>
-            {loading ? 'Saving...' : 'Save profile'}
-          </button>
+          <input ref={fileInputRef} className="profile-file-input" type="file" accept="image/*" onChange={handleAvatarChange} />
+          <label className="profile-field"><span>Name</span><input type="text" value={fullName} onChange={(event) => setFullName(event.target.value)} required /></label>
+          <label className="profile-field"><span>Email</span><input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+          <button type="submit" className="ui-btn ui-btn--primary" disabled={loading}>{loading ? 'Saving...' : 'Save profile'}</button>
         </form>
-
-        {isCustomer ? (
-          <section className="profile-account-section">
-            <div className="section-header">
-              <h2>Security</h2>
-            </div>
-            <form className="profile-form" onSubmit={handlePasswordSubmit}>
-              {passwordMessage ? <div className="profile-message">{passwordMessage}</div> : null}
-
-              <label className="profile-field">
-                <span>Current password</span>
-                <input
-                  type="password"
-                  value={passwordCurrentPassword}
-                  onChange={(event) => setPasswordCurrentPassword(event.target.value)}
-                  placeholder="Current password"
-                  required
-                />
-              </label>
-
-              <label className="profile-field">
-                <span>New password</span>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  placeholder="New password"
-                  required
-                />
-              </label>
-
-              <label className="profile-field">
-                <span>Confirm new password</span>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(event) => setConfirmPassword(event.target.value)}
-                  placeholder="Confirm new password"
-                  required
-                />
-              </label>
-
-              <button type="submit" className="ui-btn ui-btn--secondary" disabled={passwordLoading}>
-                {passwordLoading ? 'Updating...' : 'Update password'}
-              </button>
-            </form>
-
-            <div className="profile-quick-links">
-              <Link className="profile-card" to="/orders">
-                <p>Order History</p>
-                <strong>{user?.role === 'customer' ? 'View past orders' : 'Customer orders'}</strong>
-              </Link>
-              <Link className="profile-card" to="/favorites">
-                <p>Favorite</p>
-                <strong>{favoritesCount} saved products</strong>
-              </Link>
-            </div>
-          </section>
-        ) : null}
-      </div>
-
-      {viewerOpen ? (
-        <div className="profile-viewer-overlay" onClick={() => setViewerOpen(false)}>
-          <div className="profile-viewer-content" onClick={(event) => event.stopPropagation()}>
-            <img src={avatarPreview || '/default-avatar.png'} alt="Profile preview" />
-            <button type="button" className="ui-btn ui-btn--secondary" onClick={() => setViewerOpen(false)}>
-              Close
-            </button>
-          </div>
-        </div>
-      ) : null}
+      </section>
     </main>
   );
 }

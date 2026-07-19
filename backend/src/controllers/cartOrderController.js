@@ -91,7 +91,8 @@ const createOrderHandler = async (req, res) => {
 
 const listOrdersHandler = async (req, res) => {
   try {
-    const orders = await listOrders(req.user?.id);
+    const canViewAllOrders = ['staff', 'admin'].includes(req.user?.role);
+    const orders = await listOrders(canViewAllOrders ? null : req.user?.id);
     return res.json(orders);
   } catch (error) {
     return res.status(error.status || 500).json({ message: error.message || 'Unable to load orders.' });
@@ -113,7 +114,7 @@ const getOrderByIdHandler = async (req, res) => {
 const updateOrderStatusHandler = async (req, res) => {
   try {
     const { status } = req.body;
-    if (!status) return res.status(400).json({ message: 'Status is required.' });
+    if (!['Pending', 'Processing', 'OutForDelivery', 'Delivered', 'Cancelled'].includes(status)) return res.status(400).json({ message: 'Invalid order status.' });
 
     const updated = await updateOrderStatus(req.params.id, status);
     if (!updated) return res.status(404).json({ message: 'Order not found.' });

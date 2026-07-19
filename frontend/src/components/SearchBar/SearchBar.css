@@ -10,9 +10,11 @@
 }
 
 .ui-search__icon {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex: 0 0 auto;
   margin-right: 0.75rem;
   color: #f2a93b;
-  font-size: 1rem;
 }
 
 .ui-search__input {

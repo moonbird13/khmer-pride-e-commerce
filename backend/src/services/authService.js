@@ -1,10 +1,12 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import * as userRepository from '../repositories/user.repository.js';
 import * as emailVerificationTokenRepository from '../repositories/emailVerificationToken.repository.js';
 import * as refreshTokenRepository from '../repositories/refreshToken.repository.js';
 import * as passwordResetTokenRepository from '../repositories/passwordResetToken.repository.js';
+import { sendPasswordResetCode } from '../utils/email.js';
 
 dotenv.config();
 
@@ -46,6 +48,34 @@ const getUserById = async (userId) => {
 
 const saveUserRecord = async (user) => {
   return userRepository.addUser(user);
+};
+
+const PASSWORD_POLICY = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+const passwordChangeFailures = new Map();
+const MAX_PASSWORD_CHANGE_FAILURES = 5;
+const PASSWORD_CHANGE_LOCK_MS = 15 * 60 * 1000;
+
+const assertPasswordChangeAllowed = (userId) => {
+  const attempt = passwordChangeFailures.get(userId);
+  if (!attempt || !attempt.lockedUntil) return;
+  if (attempt.lockedUntil <= Date.now()) {
+    passwordChangeFailures.delete(userId);
+    return;
+  }
+  throw Object.assign(
+    new Error('Too many incorrect current-password attempts. Try again in 15 minutes.'),
+    { status: 429 }
+  );
+};
+
+const recordPasswordChangeFailure = (userId) => {
+  const attempt = passwordChangeFailures.get(userId) || { count: 0, lockedUntil: null };
+  attempt.count += 1;
+  if (attempt.count >= MAX_PASSWORD_CHANGE_FAILURES) {
+    attempt.count = 0;
+    attempt.lockedUntil = Date.now() + PASSWORD_CHANGE_LOCK_MS;
+  }
+  passwordChangeFailures.set(userId, attempt);
 };
 
 /**
@@ -160,6 +190,10 @@ const login = async ({ identifier, email, phone, password }) => {
     throw error;
   }
 
+  if (user.userStatus === 'Frozen') {
+    throw Object.assign(new Error('This account has been frozen. Please contact an administrator.'), { status: 403 });
+  }
+
 
   const isMatch = await bcrypt.compare(
       String(password),
@@ -208,6 +242,9 @@ const refreshAccessToken = async ({ refreshToken }) => {
     const error = new Error('Invalid refresh token.');
     error.status = 403;
     throw error;
+  }
+  if (user.userStatus === 'Frozen') {
+    throw Object.assign(new Error('This account has been frozen. Please contact an administrator.'), { status: 403 });
   }
 
   const accessToken = generateAccessToken(user);
@@ -269,37 +306,62 @@ const forgotPassword = async ({ email }) => {
     throw error;
   }
 
-  const resetToken = jwt.sign({ id: user.userId ?? user.id, email: user.email }, process.env.JWT_ACCESS_SECRET, { expiresIn: '1h' });
+  if (user.role !== 'customer') {
+    throw Object.assign(new Error('Password recovery is available for customer accounts only.'), { status: 403 });
+  }
+
+  const resetCode = crypto.randomInt(100000, 1000000).toString();
+  const hashedResetCode = crypto.createHash('sha256').update(resetCode).digest('hex');
 
   await passwordResetTokenRepository.createPassToken({
-    token: resetToken,
-    expiresAt: new Date(Date.now() + 60 * 60 * 1000),
+    token: hashedResetCode,
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     userId: user.userId ?? user.id,
   });
 
-  return { message: 'Password reset instructions sent.', resetToken };
+  await sendPasswordResetCode({ email: user.email, code: resetCode });
+  return { message: 'A six-digit password reset code was sent to your email. It expires in 5 minutes.' };
 };
 
-const resetPassword = async ({ token, newPassword }) => {
-  const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
-  const user = await getUserById(payload.id);
+const resetPassword = async ({ email, code, newPassword }) => {
+  const user = await getUserByEmail(email);
+  const hashedResetCode = crypto.createHash('sha256').update(String(code || '')).digest('hex');
 
-  const resetTokenRecord = await passwordResetTokenRepository.findByToken(token, payload.id);
+  const resetTokenRecord = user
+    ? await passwordResetTokenRepository.findByToken(hashedResetCode, user.userId ?? user.id)
+    : null;
   if (!user || !resetTokenRecord || resetTokenRecord.isUsed || new Date(resetTokenRecord.expiresAt) < new Date()) {
     const error = new Error('Invalid or expired reset token.');
     error.status = 400;
     throw error;
   }
 
+  if (user.role !== 'customer') {
+    throw Object.assign(new Error('Password recovery is available for customer accounts only.'), { status: 403 });
+  }
+
+  if (!PASSWORD_POLICY.test(String(newPassword))) {
+    throw Object.assign(
+      new Error('New password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.'),
+      { status: 400 }
+    );
+  }
+
   const hashedPassword = await bcrypt.hash(String(newPassword), 10);
 
   await userRepository.updatePassword(user.userId ?? user.id, hashedPassword);
   await passwordResetTokenRepository.markAsUsed(resetTokenRecord.resetTokenId ?? resetTokenRecord.id);
+  await refreshTokenRepository.revokeAllTokensForUser(user.userId ?? user.id);
 
-  return { message: 'Password reset successful.' };
+  return { message: 'Password reset successful. Please sign in again.' };
 };
 
-const changePassword = async ({ userId, currentPassword, newPassword }) => {
+const changePassword = async ({ userId, currentPassword, newPassword, role }) => {
+  if (!['admin', 'customer'].includes(String(role).toLowerCase())) {
+    throw Object.assign(new Error('You do not have permission to change this password.'), { status: 403 });
+  }
+
+  assertPasswordChangeAllowed(userId);
   const user = await getUserById(userId);
 
   if (!user) {
@@ -310,16 +372,26 @@ const changePassword = async ({ userId, currentPassword, newPassword }) => {
 
   const isMatch = await bcrypt.compare(String(currentPassword), user.password);
   if (!isMatch) {
+    recordPasswordChangeFailure(userId);
     const error = new Error('Current password is incorrect.');
     error.status = 400;
     throw error;
   }
 
+  if (!PASSWORD_POLICY.test(String(newPassword))) {
+    throw Object.assign(
+      new Error('New password must be at least 8 characters and include uppercase, lowercase, a number, and a special character.'),
+      { status: 400 }
+    );
+  }
+
   const hashedPassword = await bcrypt.hash(String(newPassword), 10);
 
   await userRepository.updatePassword(user.userId ?? user.id, hashedPassword);
+  await refreshTokenRepository.revokeAllTokensForUser(user.userId ?? user.id);
+  passwordChangeFailures.delete(userId);
 
-  return { message: 'Password changed successfully.' };
+  return { message: 'Password updated successfully.' };
 };
 
 export {

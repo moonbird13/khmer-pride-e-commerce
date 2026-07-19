@@ -25,6 +25,14 @@ body {
   min-height: 100vh;
 }
 
+/* Shared content boundary for readable, centered desktop layouts. */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: 32px;
+}
+
 a {
   color: inherit;
   text-decoration: none;
@@ -41,7 +49,7 @@ a {
 }
 
 .page-shell {
-  width: min(1140px, calc(100% - 2rem));
+  width: min(1400px, calc(100% - 4rem));
   margin: 0 auto;
   padding: 2rem 0 4rem;
 }
@@ -265,14 +273,22 @@ a {
 }
 
 @media (max-width: 860px) {
+  .container {
+    padding-inline: 24px;
+  }
+
   .page-shell {
-    width: min(1140px, calc(100% - 1.5rem));
+    width: calc(100% - 3rem);
   }
 }
 
 @media (max-width: 640px) {
+  .container {
+    padding-inline: 16px;
+  }
+
   .page-shell {
-    width: calc(100% - 1rem);
+    width: calc(100% - 2rem);
     padding: 1.5rem 0 3rem;
   }
 

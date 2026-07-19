@@ -21,10 +21,13 @@ const normalizeCategoryOption = (category) => {
 };
 
 export default function ProductManagement() {
-  const { token } = useAuth();
+  const { user } = useAuth();
+  const isStaff = user?.role === 'staff';
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [search, setSearch] = useState('');
+  const [quantitySort, setQuantitySort] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -134,17 +137,18 @@ export default function ProductManagement() {
     e.preventDefault();
 
     const data = new FormData();
-    data.append('productName', formData.productName);
     data.append('productDescription', formData.productDescription);
-    data.append('productPrice', formData.productPrice);
     data.append('categoryId', formData.categoryId);
-    data.append('quantity', formData.quantity);
+    if (!isStaff) {
+      data.append('productName', formData.productName);
+      data.append('productPrice', formData.productPrice);
+      data.append('quantity', formData.quantity);
+    }
     if (formData.image) {
       data.append('image', formData.image);
     }
 
     try {
-      console.log('ProductManagement handleSubmit', { editingProduct, formData });
       setSubmitError('');
       if (editingProduct) {
         await api.put(`/products/${editingProduct.id}`, data);
@@ -172,21 +176,31 @@ export default function ProductManagement() {
     }
   };
 
-  const filteredProducts = selectedCategory
-    ? products.filter(p => p.category?.id === parseInt(selectedCategory))
-    : products;
+  const filteredProducts = products
+    .filter((product) => !selectedCategory || product.category?.id === parseInt(selectedCategory))
+    .filter((product) => {
+      const query = search.trim().toLowerCase();
+      return !query || [product.name, product.description, product.category?.name].some((value) => String(value || '').toLowerCase().includes(query));
+    })
+    .sort((a, b) => quantitySort === 'asc'
+      ? Number(a.quantity || 0) - Number(b.quantity || 0)
+      : quantitySort === 'desc' ? Number(b.quantity || 0) - Number(a.quantity || 0) : 0);
 
   return (
     <div className="product-management">
       <div className="panel-header">
         <h2>Product Management</h2>
-        <p>Manage your product catalog with full CRUD operations.</p>
+        <p>{isStaff ? 'You can update product images, descriptions, and categories. Request approval for new products, deletions, prices, or stock changes.' : 'Manage your product catalog with full access.'}</p>
       </div>
 
       <div className="product-controls">
-        <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-          + Add New Product
-        </button>
+        {!isStaff && (
+          <button className="btn btn-primary" onClick={() => handleOpenModal()}>
+            + Add New Product
+          </button>
+        )}
+
+        <input className="product-search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search products" aria-label="Search products" />
 
         <select
           className="category-filter"
@@ -199,6 +213,11 @@ export default function ProductManagement() {
               {category.categoryName}
             </option>
           ))}
+        </select>
+        <select className="category-filter" value={quantitySort} onChange={(event) => setQuantitySort(event.target.value)} aria-label="Sort products by quantity">
+          <option value="">Sort by quantity</option>
+          <option value="asc">Quantity: low to high</option>
+          <option value="desc">Quantity: high to low</option>
         </select>
       </div>
 
@@ -237,12 +256,14 @@ export default function ProductManagement() {
                 >
                   Edit
                 </button>
-                <button
-                  className="btn btn-sm btn-danger"
-                  onClick={() => handleDelete(product.id)}
-                >
-                  Delete
-                </button>
+                {!isStaff && (
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDelete(product.id)}
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))
@@ -283,6 +304,7 @@ export default function ProductManagement() {
                   value={formData.productName}
                   onChange={handleInputChange}
                   required
+                  disabled={isStaff}
                 />
               </div>
 
@@ -322,11 +344,12 @@ export default function ProductManagement() {
                   <input
                     type="number"
                     name="productPrice"
-                    value={formData.productPrice}
-                    onChange={handleInputChange}
-                    step="0.01"
-                    min="0"
-                    required
+                  value={formData.productPrice}
+                  onChange={handleInputChange}
+                  step="0.01"
+                  min="0"
+                  required={!isStaff}
+                  disabled={isStaff}
                   />
                 </div>
 
@@ -335,9 +358,10 @@ export default function ProductManagement() {
                   <input
                     type="number"
                     name="quantity"
-                    value={formData.quantity}
-                    onChange={handleInputChange}
-                    min="0"
+                  value={formData.quantity}
+                  onChange={handleInputChange}
+                  min="0"
+                  disabled={isStaff}
                   />
                 </div>
               </div>

@@ -20,6 +20,13 @@
   color: #0f5132;
   font-weight: 700;
 }
+.ui-category-card { text-decoration: none; color: inherit; cursor: pointer; }
+
+.ui-category-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .ui-category-card__content h3 {
   margin: 0 0 0.5rem;

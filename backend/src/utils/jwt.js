@@ -12,7 +12,7 @@ const generateAccessToken = (user) => jwt.sign(
 },
 process.env.JWT_ACCESS_SECRET,
 {
- expiresIn:'15m'
+ expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '7d'
 }
 );
 
@@ -23,7 +23,7 @@ const generateRefreshToken = (user) => {
   return jwt.sign(
     { id: user.id, email: user.email, role: user.role },
     process.env.JWT_REFRESH_SECRET,
-    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
   );
 };
 

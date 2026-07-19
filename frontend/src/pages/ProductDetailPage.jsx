@@ -21,6 +21,10 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewError, setReviewError] = useState('');
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -49,6 +53,7 @@ export default function ProductDetailPage() {
           isBestSeller: Boolean(nextProduct?.isBestSeller),
           isNewArrival: Boolean(nextProduct?.isNewArrival),
           image: nextProduct?.image ?? nextProduct?.imageUrl ?? null,
+          quantity: Number(nextProduct?.quantity ?? 0),
         });
 
         setRelatedProducts(nextProducts
@@ -62,6 +67,7 @@ export default function ProductDetailPage() {
             isBestSeller: Boolean(item.isBestSeller),
             isNewArrival: Boolean(item.isNewArrival),
             image: item.image ?? item.imageUrl ?? null,
+            quantity: Number(item.quantity ?? 0),
           }))
           .filter((item) => String(item.id) !== String(nextProduct?.id ?? nextProduct?.productId))
           .slice(0, 2));
@@ -74,6 +80,11 @@ export default function ProductDetailPage() {
 
     loadProduct();
   }, [id]);
+
+  const loadReviews = async () => {
+    try { const { data } = await api.get(`/reviews/product/${id}`); setReviews(data); } catch { setReviews([]); }
+  };
+  useEffect(() => { if (id) loadReviews(); }, [id]);
 
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -98,6 +109,13 @@ export default function ProductDetailPage() {
   }, [user]);
 
   const handleAddToCart = () => addToCart(product, quantity);
+  const handleReviewSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      await api.post(`/reviews/product/${id}`, { rating: Number(reviewRating), comments: reviewComment });
+      setReviewComment(''); setReviewError(''); loadReviews();
+    } catch (error) { setReviewError(error?.response?.data?.message || 'Unable to submit review.'); }
+  };
 
   const handleToggleFavorite = async (productToToggle) => {
     if (!user || user.role !== 'customer' || !productToToggle?.id) return;
@@ -128,6 +146,10 @@ export default function ProductDetailPage() {
   };
 
   const isCurrentProductFavorite = product && favoriteIds.has(String(product.id));
+  const productDetails = String(product?.description || '').split('\n').map((line) => {
+    const [label, ...value] = line.split(':');
+    return { label: value.length ? label : 'About', value: value.length ? value.join(':').trim() : line };
+  });
 
   if (!product) {
     return <main className="product-detail-page page-shell"><p>Loading product...</p></main>;
@@ -160,13 +182,13 @@ export default function ProductDetailPage() {
         <div className="product-detail-page__info">
           <p className="eyebrow">{product.category?.name || 'Featured'}</p>
           <h1>{product.name}</h1>
-          <p className="product-detail-page__meta">{product.description}</p>
+          <div className="product-detail-page__details-card">{productDetails.map((detail) => <div key={detail.label}><strong>{detail.label}</strong><span>{detail.value}</span></div>)}</div>
           <div className="product-detail-page__price">${Number(product.price).toFixed(2)}</div>
           <p className="product-detail-page__meta">Featured: {product.isFeatured ? 'Yes' : 'No'}</p>
 
           <div className="product-detail-page__actions">
             <QuantitySelector value={quantity} onChange={setQuantity} />
-            <Button onClick={handleAddToCart}>Add to cart</Button>
+            <Button onClick={handleAddToCart} disabled={Number(product.quantity) <= 0}>{Number(product.quantity) <= 0 ? 'Out of stock' : 'Add to cart'}</Button>
             {user?.role === 'customer' ? (
               <button
                 type="button"
@@ -180,18 +202,13 @@ export default function ProductDetailPage() {
             <Button to="/checkout" variant="secondary">Checkout</Button>
           </div>
 
-          <div className="product-detail-page__section">
-            <h2>Product details</h2>
-            <p>{product.description}</p>
-          </div>
         </div>
       </section>
 
       <section className="product-detail-page__section">
         <h2>Customer reviews</h2>
-        <div className="product-grid">
-          <p>No reviews are currently available for this product.</p>
-        </div>
+        <div className="product-reviews">{reviews.length === 0 ? <p>No reviews yet.</p> : reviews.map((review) => <article key={review.id}><strong>{review.customerName}</strong><span>{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</span><p>{review.comments}</p><small>{new Date(review.createdAt).toLocaleDateString()}</small></article>)}</div>
+        {user?.role === 'customer' ? <form className="review-form" onSubmit={handleReviewSubmit}><h3>Write a review</h3><label>Rating<select value={reviewRating} onChange={(event) => setReviewRating(event.target.value)}>{[5, 4, 3, 2, 1].map((rating) => <option key={rating} value={rating}>{rating} star{rating > 1 ? 's' : ''}</option>)}</select></label><label>Your review<textarea value={reviewComment} onChange={(event) => setReviewComment(event.target.value)} required rows="3" /></label>{reviewError && <p className="review-error">{reviewError}</p>}<Button type="submit">Submit review</Button></form> : <p>Sign in with a customer account to leave a rating and review.</p>}
       </section>
 
       <section className="product-detail-page__section">

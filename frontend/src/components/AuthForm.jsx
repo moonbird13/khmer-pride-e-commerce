@@ -7,10 +7,14 @@ export default function AuthForm({ mode, onSubmit, loading, error }) {
   const [identifier, setIdentifier] = useState('');
   const [identifierType, setIdentifierType] = useState('email');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState('');
 
   useEffect(() => {
     setIdentifier('');
     setPassword('');
+    setConfirmPassword('');
+    setFormError('');
     setIdentifierType('email');
     if (mode !== 'register') {
       setFullName('');
@@ -19,6 +23,11 @@ export default function AuthForm({ mode, onSubmit, loading, error }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (mode === 'register' && password !== confirmPassword) {
+      setFormError('Passwords do not match.');
+      return;
+    }
+    setFormError('');
     onSubmit({
       fullName,
       identifier,
@@ -43,8 +52,7 @@ export default function AuthForm({ mode, onSubmit, loading, error }) {
   return (
     <form className="auth-card" onSubmit={handleSubmit}>
       <h2>{mode === 'register' ? 'Create your account' : 'Welcome back'}</h2>
-      <p>Discover authentic Cambodian products with Khmer Pride.</p>
-      {error ? <div className="error-box">{error}</div> : null}
+      {error || formError ? <div className="error-box">{error || formError}</div> : null}
       {isRegister ? (
         <Input
           label="Full name"
@@ -64,13 +72,16 @@ export default function AuthForm({ mode, onSubmit, loading, error }) {
             type={isEmailMode ? 'email' : 'tel'}
             required
           />
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setIdentifierType(isEmailMode ? 'phone' : 'email')}
+          <a
+            href={isEmailMode ? '#phone-registration' : '#email-registration'}
+            className="auth-identifier-toggle"
+            onClick={(event) => {
+              event.preventDefault();
+              setIdentifierType(isEmailMode ? 'phone' : 'email');
+            }}
           >
             {isEmailMode ? 'Or Enter Phone Number' : 'Use Email Address'}
-          </Button>
+          </a>
         </div>
       ) : (
         <Input
@@ -83,6 +94,16 @@ export default function AuthForm({ mode, onSubmit, loading, error }) {
         />
       )}
       <Input label="Password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" type="password" required />
+      {isRegister ? (
+        <Input
+          label="Re-enter password"
+          value={confirmPassword}
+          onChange={(event) => setConfirmPassword(event.target.value)}
+          placeholder="Re-enter your password"
+          type="password"
+          required
+        />
+      ) : null}
       <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : mode === 'register' ? 'Register' : 'Login'}</Button>
     </form>
   );

@@ -77,3 +77,4 @@
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+.ui-product-card__stock{margin:4px 0 0;color:#c62828;font-size:12px;font-weight:700}

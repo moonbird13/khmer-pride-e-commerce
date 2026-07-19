@@ -6,6 +6,7 @@ import {
     deleteCartItem,
     clearCartItems
 } from "../repositories/cart.repository.js";
+import db from '../models/index.js';
 
 
 
@@ -56,7 +57,8 @@ export const addToCart = async({
     productId,
     quantity=1
 })=>{
-
+    const inventory = await db.Inventory.findOne({ where: { productId } });
+    if (!inventory || Number(inventory.stockQuantity) <= 0) throw new Error('This product is out of stock.');
     const cart = await getOrCreateCart(userId);
     const existingItem = await findCartItem(
         cart.cartId,
@@ -64,6 +66,7 @@ export const addToCart = async({
     );
 
     if(existingItem){
+        if (Number(existingItem.quantity) + Number(quantity) > Number(inventory.stockQuantity)) throw new Error('Requested quantity exceeds available stock.');
         existingItem.quantity += Number(quantity);
         await existingItem.save();
     }else{
@@ -123,6 +126,9 @@ export const updateQuantity = async({
         await deleteCartItem(cart.cartId, productId);
         return getCart(userId);
     }
+
+    const inventory = await db.Inventory.findOne({ where: { productId } });
+    if (!inventory || nextQuantity > Number(inventory.stockQuantity)) throw new Error('Requested quantity exceeds available stock.');
 
     existingItem.quantity = nextQuantity;
     await existingItem.save();

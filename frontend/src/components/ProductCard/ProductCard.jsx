@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../Button/Button.jsx';
 import QuantitySelector from '../QuantitySelector/QuantitySelector.jsx';
 import Rating from '../Rating/Rating.jsx';
 import './ProductCard.css';
 
-export default function ProductCard({ product, onAddToCart, onToggleFavorite, isFavorite = false, className = '' }) {
+export default function ProductCard({ product, onAddToCart, onToggleFavorite, isFavorite = false, compact = false, className = '' }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id, name, description, price, rating, image, category } = product || {};
   const [quantity, setQuantity] = useState(1);
   const categoryName = typeof category === 'object' ? category?.name : category;
   const showFavoriteButton = Boolean(onToggleFavorite) && user?.role === 'customer';
+  const isOutOfStock = product?.quantity != null && Number(product.quantity) <= 0;
 
   const handleFavoriteClick = (event) => {
     event.stopPropagation();
@@ -27,7 +28,7 @@ export default function ProductCard({ product, onAddToCart, onToggleFavorite, is
   };
 
   return (
-    <article className={`ui-card ui-product-card ${className}`.trim()}>
+    <article className={`ui-card ui-product-card${compact ? ' ui-product-card--compact' : ''} ${className}`.trim()}>
       <div className="ui-product-card__image">
         {image ? (
           <img src={image} alt={name || 'Product image'} />
@@ -49,10 +50,11 @@ export default function ProductCard({ product, onAddToCart, onToggleFavorite, is
       </div>
       <div className="ui-product-card__content">
         <p className="ui-card__meta">{categoryName || 'Featured product'}</p>
-        <h3>{name}</h3>
-        <p>{description}</p>
+        <h3><Link to={`/products/${id}`}>{name}</Link></h3>
+        {isOutOfStock ? <p className="ui-product-card__stock">Out of stock</p> : null}
+        {!compact ? <p>{description}</p> : null}
       </div>
-      <Rating value={rating || 0} showValue size="sm" readOnly />
+      {!compact ? <Rating value={rating || 0} showValue size="sm" readOnly /> : null}
       <div className="ui-product-card__footer">
         <strong>${Number(price || 0).toFixed(2)}</strong>
         <div className="ui-product-card__actions">
@@ -60,8 +62,8 @@ export default function ProductCard({ product, onAddToCart, onToggleFavorite, is
             View
           </Button>
           {user ? (
-            <Button onClick={() => onAddToCart?.(product, quantity)} size="sm">
-              Add
+            <Button onClick={() => onAddToCart?.(product, quantity)} size="sm" disabled={isOutOfStock}>
+              {isOutOfStock ? 'Out of stock' : 'Add'}
             </Button>
           ) : (
             <Button to="/login" variant="secondary" size="sm">
@@ -70,7 +72,7 @@ export default function ProductCard({ product, onAddToCart, onToggleFavorite, is
           )}
         </div>
       </div>
-      <QuantitySelector value={quantity} onChange={setQuantity} />
+      {!compact ? <QuantitySelector value={quantity} onChange={setQuantity} /> : null}
     </article>
   );
 }

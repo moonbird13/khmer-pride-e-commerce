@@ -1,0 +1,12 @@
+.inventory-heading h2 { margin: 0 0 4px; font-size: 20px; }
+.inventory-heading p { margin: 0; color: #666; }
+.inventory-controls { display: flex; gap: 12px; margin: 18px 0; flex-wrap: wrap; }
+.inventory-controls input, .inventory-controls select { border: 1px solid #d5d5d5; border-radius: 8px; padding: 10px 12px; font: inherit; }
+.inventory-controls input { flex: 1 1 260px; }
+.inventory-table { display: grid; gap: 8px; }
+.inventory-row { display: grid; grid-template-columns: 2fr 1fr 1fr 120px; align-items: center; gap: 12px; border: 1px solid #ebe6d8; border-radius: 10px; padding: 12px; background: #fffdf8; }
+.inventory-row--header { border: 0; background: transparent; color: #77736c; font-size: 12px; font-weight: 700; }
+.inventory-low { color: #c62828; }.inventory-available { color: #167a45; }.inventory-status { font-weight: 700; }
+.inventory-row button { border: 0; border-radius: 7px; padding: 7px 10px; background: #c62828; color: white; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.inventory-row button:hover { background: #9f1f1f; }.inventory-error { color: #c62828; }
+@media (max-width: 650px) { .inventory-row { grid-template-columns: 1fr; } .inventory-row--header { display: none; } }

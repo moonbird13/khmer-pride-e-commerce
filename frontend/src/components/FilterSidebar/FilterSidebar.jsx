@@ -1,4 +1,5 @@
 import Input from '../Input/Input.jsx';
+import { CategoryIcon } from '../CategoryCard/CategoryCard.jsx';
 
 export default function FilterSidebar({
   categories = [],
@@ -32,7 +33,7 @@ export default function FilterSidebar({
               onClick={() => onSelectCategory?.(category.id)}
               type="button"
             >
-              <span className="category-icon">{category.image || '🛍️'}</span>
+              <span className="category-icon"><CategoryIcon name={category.name} /></span>
               {category.name}
             </button>
           ))}

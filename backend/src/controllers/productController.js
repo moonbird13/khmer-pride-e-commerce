@@ -161,7 +161,6 @@ const getFilterOptionsHandler = async (req, res) => {
 const updateProductHandler = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('updateProductHandler called', { id, body: req.body, hasFile: !!req.file });
     const data = { ...req.body };
     let imageUrl = null;
     let publicId = null;
@@ -175,6 +174,24 @@ const updateProductHandler = async (req, res) => {
 
       data.imageUrl = imageUrl;
       data.publicId = publicId;
+    }
+
+    // Staff may maintain product content, but pricing and stock changes require
+    // a request approved by an administrator.
+    if (req.user?.role === 'staff') {
+      const allowedFields = ['productDescription', 'categoryId', 'imageUrl', 'publicId'];
+      const requestedRestrictedFields = ['productName', 'productPrice', 'quantity']
+        .filter((field) => Object.prototype.hasOwnProperty.call(data, field));
+
+      if (requestedRestrictedFields.length > 0) {
+        return res.status(403).json({
+          message: 'Staff can only update a product image, description, or category. Submit a request for product name, price, or quantity changes.',
+        });
+      }
+
+      Object.keys(data).forEach((field) => {
+        if (!allowedFields.includes(field)) delete data[field];
+      });
     }
 
     const product = await updateProduct(id, data);

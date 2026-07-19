@@ -18,6 +18,33 @@
   margin-bottom: 2rem;
 }
 
+.profile-header--with-settings {
+  justify-content: space-between;
+}
+
+.profile-heading-with-avatar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.profile-settings-link {
+  width: 44px;
+  height: 44px;
+  border: 1px solid #e3d5bf;
+  border-radius: 12px;
+  color: #3b2b1b;
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 1.5rem;
+}
+
+.profile-settings-link:hover { background: #f7f1e7; }
+.profile-settings-link svg { width: 22px; height: 22px; }
+
+.settings-section h2 { margin: 0 0 1rem; }
+
 .profile-avatar-menu {
   position: relative;
 }

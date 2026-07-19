@@ -1,10 +1,10 @@
 import { DataTypes } from 'sequelize';
 import sequelize from '../config/database.js';
 
-// Staff submits this model when asking an admin to add or delete a product.
+// Staff submits this model when asking an admin to create, delete, or reprice a product.
 const ProductRequest = sequelize.define('ProductRequest', {
   productRequestId: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true, field: 'product_request_ID' },
-  requestType: { type: DataTypes.ENUM('Create', 'Delete'), allowNull: false, field: 'request_type' },
+  requestType: { type: DataTypes.ENUM('Create', 'Delete', 'Price'), allowNull: false, field: 'request_type' },
   productId: { type: DataTypes.INTEGER, allowNull: true, field: 'product_ID' },
   categoryId: { type: DataTypes.INTEGER, allowNull: true, field: 'category_ID' },
   staffId: { type: DataTypes.INTEGER, allowNull: false, field: 'staff_ID' },

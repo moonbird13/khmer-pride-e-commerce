@@ -21,7 +21,10 @@ router.post('/inventory', authenticate, staffOnly, async (req, res) => {
 router.post('/products', authenticate, staffOnly, async (req, res) => {
   try {
     const { requestType, reason, ...details } = req.body;
-    if (!['Create', 'Delete'].includes(requestType) || !reason) return res.status(400).json({ message: 'A Create or Delete request and reason are required.' });
+    if (!['Create', 'Delete', 'Price'].includes(requestType) || !reason) return res.status(400).json({ message: 'A Create, Delete, or Price request and reason are required.' });
+    if (requestType === 'Price' && (!details.productId || details.productPrice === undefined || Number(details.productPrice) <= 0)) {
+      return res.status(400).json({ message: 'A product and a price greater than zero are required for price requests.' });
+    }
     const request = await db.ProductRequest.create({ ...details, requestType, reason, staffId: requesterId(req) });
     res.status(201).json(request);
   } catch (error) { res.status(400).json({ message: error.message }); }
@@ -29,7 +32,10 @@ router.post('/products', authenticate, staffOnly, async (req, res) => {
 
 router.get('/mine', authenticate, staffOnly, async (req, res) => {
   const staffId = requesterId(req);
-  const [inventory, products] = await Promise.all([db.InventoryRequest.findAll({ where: { staffId } }), db.ProductRequest.findAll({ where: { staffId } })]);
+  const [inventory, products] = await Promise.all([
+    db.InventoryRequest.findAll({ where: { staffId }, include: [{ model: db.Product }] }),
+    db.ProductRequest.findAll({ where: { staffId }, include: [{ model: db.Product }] }),
+  ]);
   res.json({ inventory, products });
 });
 
@@ -103,6 +109,13 @@ router.patch('/products/:id', authenticate, adminOnly, async (req, res) => {
       if (request.requestType === 'Delete') {
         if (!request.productId) return res.status(400).json({ message: 'Product ID is required for delete requests.' });
         await db.Product.destroy({ where: { productId: request.productId } });
+      }
+
+      if (request.requestType === 'Price') {
+        if (!request.productId || request.productPrice === null || Number(request.productPrice) <= 0) {
+          return res.status(400).json({ message: 'A valid product and price are required for price requests.' });
+        }
+        await updateProduct(request.productId, { productPrice: request.productPrice });
       }
     }
 

@@ -56,8 +56,8 @@ const forgotPassword = async (email) => {
   return data;
 };
 
-const resetPassword = async (token, newPassword) => {
-  const { data } = await api.post('/auth/reset-password', { token, newPassword });
+const resetPassword = async (email, code, newPassword) => {
+  const { data } = await api.post('/auth/reset-password', { email, code, newPassword });
   return data;
 };
 
@@ -84,12 +84,9 @@ const updateCartItem = async (productId, quantity) => {
   return data;
 };
 
-const updateProfile = async (formData) => {
-  const { data } = await api.patch('/auth/profile', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  });
+const updateProfile = async (profile) => {
+  const config = profile instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined;
+  const { data } = await api.patch('/auth/profile', profile, config);
   return data;
 };
 

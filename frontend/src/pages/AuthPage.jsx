@@ -4,6 +4,7 @@ import AuthForm from '../components/AuthForm';
 import Button from '../components/Button/Button.jsx';
 import Input from '../components/Input/Input.jsx';
 import { useAuth } from '../context/AuthContext';
+import { forgotPassword, resetPassword } from '../services/api';
 import './AuthPage.css';
 
 export default function AuthPage() {
@@ -12,10 +13,12 @@ export default function AuthPage() {
   const pathname = location.pathname;
   const isStaffLogin = pathname === '/staff-login';
   const mode = pathname === '/register' ? 'register' : pathname === '/forgot-password' ? 'forgot' : pathname.startsWith('/reset-password') ? 'reset' : pathname.startsWith('/verify-email') ? 'verify' : 'login';
-  const { login, loginStaff, register } = useAuth();
+  const { login, loginStaff, register, logout } = useAuth();
 
   const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('success');
   const [email, setEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -23,6 +26,7 @@ export default function AuthPage() {
   const handleAuthSubmit = async ({ fullName, identifier, identifierType, password: authPassword }) => {
     setLoading(true);
     setMessage('');
+    setMessageType('success');
     try {
       if (mode === 'register') {
         await register({
@@ -32,14 +36,20 @@ export default function AuthPage() {
           password: authPassword,
         });
         setMessage('Registration successful. Please log in with your new account.');
+        setMessageType('success');
         setTimeout(() => navigate('/login'), 1500);
       } else {
         const result = await (isStaffLogin ? loginStaff(identifier, authPassword) : login(identifier, authPassword));
         const role = result?.user?.role;
+        if (!isStaffLogin && ['staff', 'admin'].includes(role)) {
+          await logout();
+          throw new Error('Staff and admin accounts must sign in at /staff-login.');
+        }
         setMessage('Login successful.');
+        setMessageType('success');
         setTimeout(() => {
           if (role === 'admin') {
-            navigate('/admin-dashboard');
+            navigate('/admin-portal');
             return;
           }
           if (role === 'staff') {
@@ -52,6 +62,7 @@ export default function AuthPage() {
     } catch (error) {
       const errorMessage = error?.response?.data?.message || error?.message || 'Authentication failed.';
       setMessage(errorMessage);
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -61,9 +72,13 @@ export default function AuthPage() {
     event.preventDefault();
     setLoading(true);
     setMessage('');
+    setMessageType('success');
     try {
-      setMessage('Recovery instructions are ready for the next step.');
-      navigate('/login');
+      const result = await forgotPassword(email);
+      navigate(`/reset-password?email=${encodeURIComponent(email)}`, { state: { message: result.message } });
+    } catch (error) {
+      setMessage(error?.response?.data?.message || error?.message || 'Unable to start password recovery.');
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -72,14 +87,21 @@ export default function AuthPage() {
   const handleResetSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
+    setMessage('');
+    setMessageType('success');
     try {
       if (password !== confirmPassword) {
         throw new Error('Passwords do not match.');
       }
-      setMessage('Password reset successful. Please log in again.');
-      navigate('/login');
+      const resetEmail = new URLSearchParams(location.search).get('email');
+      if (!resetEmail || !resetCode) {
+        throw new Error('Email address and reset code are required.');
+      }
+      await resetPassword(resetEmail, resetCode, password);
+      navigate('/login', { state: { message: 'Password reset successful. Please sign in again.' } });
     } catch (error) {
-      setMessage(error.message || 'Unable to reset password.');
+      setMessage(error?.response?.data?.message || error?.message || 'Unable to reset password.');
+      setMessageType('error');
     } finally {
       setLoading(false);
     }
@@ -97,9 +119,9 @@ export default function AuthPage() {
               : mode === 'register'
                 ? 'Join the Khmer Pride community and keep track of favourite pieces.'
                 : mode === 'forgot'
-                  ? 'We will send your reset request to the backend and continue to the next step.'
+                  ? 'Enter your customer email and we will send a six-digit reset code.'
                   : mode === 'reset'
-                    ? 'Choose a new password for your Khmer Pride account.'
+                    ? 'Enter the six-digit code from your email, then choose a new password.'
                     : mode === 'verify'
                       ? 'Your email verification screen is ready for the next integration step.'
                       : 'Sign in to continue browsing and check out seamlessly.'}
@@ -107,35 +129,45 @@ export default function AuthPage() {
         </section>
 
         <section className="auth-panel">
-          {message ? <div className="auth-panel__status">{message}</div> : null}
+          {message ? <div className={`auth-panel__status auth-panel__status--${messageType}`}>{message}</div> : null}
 
           {mode === 'register' || mode === 'login' ? (
             <>
               <AuthForm mode={mode} onSubmit={handleAuthSubmit} loading={loading} />
-              <div className="auth-link-row">
-                <Link to="/forgot-password">Forgot password?</Link>
-                {!isStaffLogin ? (
-                  <Link to={mode === 'login' ? '/register' : '/login'}>{mode === 'login' ? 'Create account' : 'Back to login'}</Link>
-                ) : (
-                  <Link to="/login">Customer login</Link>
-                )}
-              </div>
+              {mode === 'register' ? (
+                <div className="auth-link-row auth-link-row--register">
+                  <Link className="auth-back-icon" to="/login" aria-label="Back to login" title="Back to login">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /><path d="M9 12h11" /></svg>
+                  </Link>
+                </div>
+              ) : (
+                <div className="auth-link-row auth-link-row--split">
+                  <Link to="/forgot-password">Forgot password?</Link>
+                  {!isStaffLogin ? <Link to="/register">Create account</Link> : <Link to="/login">Customer login</Link>}
+                </div>
+              )}
             </>
           ) : null}
 
           {mode === 'forgot' ? (
             <form className="auth-form-grid" onSubmit={handleForgotSubmit}>
               <Input label="Email address" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" required />
-              <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : 'Send link'}</Button>
-              <div className="auth-link-row">
-                <Link to="/login">Back to login</Link>
-                <Link to="/register">Create account</Link>
+              <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : 'Send code'}</Button>
+              <div className="forgot-password-actions">
+                <Link className="forgot-password-back" to="/login" aria-label="Back to login" title="Back to login">
+                  <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6" />
+                    <path d="M9 12h11" />
+                  </svg>
+                </Link>
+                <Link className="forgot-password-register" to="/register">Create account</Link>
               </div>
             </form>
           ) : null}
 
           {mode === 'reset' ? (
             <form className="auth-form-grid" onSubmit={handleResetSubmit}>
+              <Input label="Reset code" type="text" value={resetCode} onChange={(event) => setResetCode(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Enter the 6-digit code" inputMode="numeric" required />
               <Input label="New password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Enter a new password" required />
               <Input label="Confirm password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} placeholder="Re-enter password" required />
               <Button type="submit" disabled={loading}>{loading ? 'Please wait...' : 'Save password'}</Button>

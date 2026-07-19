@@ -39,8 +39,16 @@ export const revokeToken = async (userId, token) => {
   );
 };
 
+export const revokeAllTokensForUser = async (userId) => {
+  return await RefreshToken.update(
+    { revokedAt: new Date() },
+    { where: { userId, revokedAt: null } }
+  );
+};
+
 export default {
     createToken,
     findByToken,
-    revokeToken
+    revokeToken,
+    revokeAllTokensForUser
 };

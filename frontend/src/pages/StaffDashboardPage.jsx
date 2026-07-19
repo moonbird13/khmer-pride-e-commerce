@@ -1,20 +1,15 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './StaffDashboardPage.css';
 import ProductManagement from '../components/ProductManagement/ProductManagement';
 import StaffRequests from '../components/StaffRequests/StaffRequests';
+import InventoryManagement from '../components/InventoryManagement/InventoryManagement';
+import api, { getProducts } from '../services/api';
 
 const MENU_ITEMS = [
   { key: 'orders', label: 'Orders' },
   { key: 'inventory', label: 'Inventory' },
   { key: 'product', label: 'Product' },
   { key: 'requests', label: 'Requests' },
-];
-
-const DASHBOARD_METRICS = [
-  { label: 'Total Revenue', value: '$61,400', subtitle: '+18.4% vs last month' },
-  { label: 'Total Orders', value: '6,920', subtitle: '+12.1% vs last month' },
-  { label: 'Active Customers', value: '1,284', subtitle: '+5.7% vs last month' },
-  { label: 'Avg Order Value', value: '$62.40', subtitle: '-2.3% vs last month' },
 ];
 
 const ORDERS = [
@@ -50,18 +45,63 @@ const ORDERS = [
   },
 ];
 
-const STOCK_ITEMS = [
-  { sku: 'STK-001', name: 'Silk Krama Scarf', quantity: 48, status: 'In stock' },
-  { sku: 'STK-002', name: 'Jasmine Green Tea', quantity: 120, status: 'In stock' },
-  { sku: 'STK-003', name: 'Turmeric Powder', quantity: 18, status: 'Low stock' },
-  { sku: 'STK-004', name: 'Khmer Gift Box', quantity: 9, status: 'Low stock' },
-];
-
 export default function StaffDashboardPage() {
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [requestedInventoryProduct, setRequestedInventoryProduct] = useState(null);
+  const [dashboardData, setDashboardData] = useState({ orders: [], products: [], requests: { inventory: [], products: [] } });
+  const [dashboardError, setDashboardError] = useState('');
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderStatusFilter, setOrderStatusFilter] = useState('');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const pageTitle = { dashboard: 'Dashboard', orders: 'Orders', inventory: 'Inventory', product: 'Product Management', requests: 'Requests' }[activeSection];
+
+  const openInventoryRequest = (product) => {
+    setRequestedInventoryProduct(product);
+    setActiveSection('requests');
+  };
+
+  useEffect(() => {
+    Promise.all([api.get('/orders'), getProducts(), api.get('/requests/mine')])
+      .then(([ordersResponse, productsResponse, requestsResponse]) => setDashboardData({
+        orders: ordersResponse.data || [],
+        products: Array.isArray(productsResponse) ? productsResponse : productsResponse.products || [],
+        requests: requestsResponse.data || { inventory: [], products: [] },
+      }))
+      .catch((error) => setDashboardError(error?.response?.data?.message || 'Unable to load staff dashboard data.'));
+  }, []);
+
+  const dashboard = useMemo(() => {
+    const today = new Date().toDateString();
+    const requests = [...dashboardData.requests.inventory, ...dashboardData.requests.products];
+    const activities = [
+      ...dashboardData.orders.map((order) => ({ title: `Order #${order.id} is ${order.status}`, at: order.createdAt, status: order.status })),
+      ...requests.map((request) => ({ title: `${request.requestType || 'Inventory'} request is ${request.status}`, at: request.reviewedAt || request.requestedAt, status: request.status })),
+    ].sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 6);
+    return {
+      todaysOrders: dashboardData.orders.filter((order) => new Date(order.createdAt).toDateString() === today).length,
+      pendingOrders: dashboardData.orders.filter((order) => ['Pending', 'Processing'].includes(order.status)).length,
+      lowStock: dashboardData.products.filter((product) => Number(product.quantity || 0) <= 20).length,
+      pendingRequests: requests.filter((request) => request.status === 'Pending').length,
+      activities,
+    };
+  }, [dashboardData]);
+  const dashboardMetrics = [
+    ['Today’s Orders', dashboard.todaysOrders, 'Orders received today'],
+    ['Pending Orders', dashboard.pendingOrders, 'Need processing'],
+    ['Low Stock Products', dashboard.lowStock, '20 units or fewer'],
+    ['My Pending Requests', dashboard.pendingRequests, 'Awaiting admin review'],
+  ];
+  const visibleOrders = dashboardData.orders.filter((order) => (!orderStatusFilter || order.status === orderStatusFilter) && String(order.id).includes(orderSearch.trim()));
+  const updateOrderStatus = async (orderId, status) => {
+    try {
+      await api.put(`/orders/${orderId}/status`, { status });
+      setDashboardData((previous) => ({ ...previous, orders: previous.orders.map((order) => order.id === orderId ? { ...order, status } : order) }));
+      if (selectedOrder?.id === orderId) setSelectedOrder((order) => ({ ...order, status }));
+    } catch (error) { setDashboardError(error?.response?.data?.message || 'Unable to update the order status.'); }
+  };
 
   return (
-    <main className="staff-dashboard page-shell">
+    <main className="staff-dashboard">
       <aside className="staff-sidebar">
         <div className="sidebar-brand">
           <span className="brand-mark">KP</span>
@@ -98,26 +138,23 @@ export default function StaffDashboardPage() {
       </aside>
 
       <section className="staff-content">
+        <header className="staff-header">
+          <div><h1>{pageTitle}</h1><p>Staff Portal</p></div>
+          <span className="staff-account-label">Staff</span>
+        </header>
+
         {/* Dashboard Section */}
         {activeSection === 'dashboard' && (
           <>
-            <header className="staff-header">
-              <div>
-                <p className="eyebrow">Staff Portal</p>
-                <h1>Dashboard</h1>
-                <p className="staff-subtitle">Orders, stock, and product management in one place.</p>
-              </div>
-            </header>
-
-            <div className="metrics-grid">
-              {DASHBOARD_METRICS.map((metric) => (
-                <div key={metric.label} className="metric-card">
-                  <p className="metric-label">{metric.label}</p>
-                  <h2>{metric.value}</h2>
-                  <p className="metric-note">{metric.subtitle}</p>
+            {dashboardError ? <p className="staff-dashboard-error">{dashboardError}</p> : <><section className="staff-dashboard-intro"><p>Operations overview</p><h2>Today Task Overview</h2><span>Track orders, inventory, and your pending requests.</span></section><div className="metrics-grid">
+              {dashboardMetrics.map(([label, value, subtitle]) => (
+                <div key={label} className="metric-card">
+                  <p className="metric-label">{label}</p>
+                  <h2>{value}</h2>
+                  <p className="metric-note">{subtitle}</p>
                 </div>
               ))}
-            </div>
+            </div><section className="staff-activity panel-block"><div className="panel-header"><div><h2>Recent Activities</h2><p>Latest orders and your request updates.</p></div></div>{dashboard.activities.length === 0 ? <p>No recent activity.</p> : dashboard.activities.map((activity, index) => <div className="staff-activity-item" key={`${activity.title}-${index}`}><i /><div><strong>{activity.title}</strong><span>{new Date(activity.at).toLocaleString()}</span></div><b>{activity.status}</b></div>)}</section></>}
           </>
         )}
 
@@ -126,10 +163,12 @@ export default function StaffDashboardPage() {
           <div className="panel-block">
             <div className="panel-header">
               <h2>Order Management</h2>
-              <p>Click an order to view its details below.</p>
+              <p>Search, filter, view, and update customer orders.</p>
             </div>
+            <div className="order-controls"><input value={orderSearch} onChange={(event) => setOrderSearch(event.target.value)} placeholder="Search by order number" /><select value={orderStatusFilter} onChange={(event) => setOrderStatusFilter(event.target.value)}><option value="">All statuses</option>{['Pending', 'Processing', 'OutForDelivery', 'Delivered', 'Cancelled'].map((status) => <option key={status}>{status}</option>)}</select></div>
             <div className="orders-grid">
-              {ORDERS.map((order) => (
+              {visibleOrders.map((order) => <div key={order.id} className="order-card"><div className="order-card__row"><span className="order-id">Order #{order.id}</span><span className={`status-pill status-${order.status.toLowerCase()}`}>{order.status}</span></div><div className="order-card__row"><strong>${Number(order.total).toFixed(2)}</strong><span>{new Date(order.createdAt).toLocaleString()}</span></div><div className="order-card__row order-card__summary"><span>{order.items.length} item(s)</span><button className="order-view-button" onClick={() => setSelectedOrder(order)}>View details</button></div><select className="order-status-select" value={order.status} onChange={(event) => updateOrderStatus(order.id, event.target.value)}>{['Pending', 'Processing', 'OutForDelivery', 'Delivered', 'Cancelled'].map((status) => <option key={status}>{status}</option>)}</select></div>)}
+              {false && ORDERS.map((order) => (
                 <div key={order.id} className="order-card">
                   <div className="order-card__row">
                     <span className="order-id">{order.id}</span>
@@ -155,32 +194,14 @@ export default function StaffDashboardPage() {
                 </div>
               ))}
             </div>
+            {selectedOrder && <div className="order-modal"><article><button onClick={() => setSelectedOrder(null)} aria-label="Close order details">×</button><h3>Order #{selectedOrder.id}</h3><p>Status: <strong>{selectedOrder.status}</strong></p><p>Total: <strong>${Number(selectedOrder.total).toFixed(2)}</strong></p><div>{selectedOrder.items.map((item, index) => <p key={index}>Product #{item.productId} — {item.quantity} × ${Number(item.price).toFixed(2)}</p>)}</div></article></div>}
           </div>
         )}
 
         {/* Inventory Section */}
         {activeSection === 'inventory' && (
           <div className="panel-block">
-            <div className="panel-header">
-              <h2>Inventory</h2>
-              <p>Track stock levels and identify low quantity items.</p>
-            </div>
-            <div className="stock-table">
-              <div className="table-row table-row--header">
-                <span>SKU</span>
-                <span>Product</span>
-                <span>Quantity</span>
-                <span>Status</span>
-              </div>
-              {STOCK_ITEMS.map((item) => (
-                <div key={item.sku} className="table-row">
-                  <span>{item.sku}</span>
-                  <span>{item.name}</span>
-                  <span>{item.quantity}</span>
-                  <span>{item.status}</span>
-                </div>
-              ))}
-            </div>
+            <InventoryManagement onRequestStock={openInventoryRequest} />
           </div>
         )}
 
@@ -194,7 +215,7 @@ export default function StaffDashboardPage() {
         {/* Staff Requests Section */}
         {activeSection === 'requests' && (
           <div className="panel-block">
-            <StaffRequests />
+            <StaffRequests initialInventoryProduct={requestedInventoryProduct} />
           </div>
         )}
       </section>
