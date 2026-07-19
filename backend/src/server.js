@@ -22,10 +22,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://localhost:5175,http://localhost:5176')
-  .split(',')
-  .map((s) => s.trim())
-  .filter(Boolean);
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : [];
 
 app.use(
   cors({
