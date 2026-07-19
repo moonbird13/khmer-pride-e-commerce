@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { addFavorite, getFavorites, removeFavorite } from '../services/api';
 import ProductCard from '../components/ProductCard/ProductCard';
-import './FavoritesPage.css';
+import './favoritesPage.css';
 
 export default function FavoritesPage() {
     const { user } = useAuth();
