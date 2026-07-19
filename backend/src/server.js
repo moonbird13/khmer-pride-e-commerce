@@ -153,17 +153,7 @@ const seedInitialData = async () => {
 const startServer = async () => {
   try {
     await db.sequelize.authenticate();
-    if (process.env.NODE_ENV !== 'production') {
-      // Disable foreign key checks to allow dropping tables with constraints
-      await db.sequelize.query('SET FOREIGN_KEY_CHECKS=0');
-      try {
-        // Use force: true in development to drop and recreate tables fresh
-        await db.sequelize.sync({ force: true });
-      } finally {
-        // Re-enable foreign key checks
-        await db.sequelize.query('SET FOREIGN_KEY_CHECKS=1');
-      }
-    }
+    await db.sequelize.sync();
     await seedInitialData();
     app.listen(PORT, () => {
       console.log(`Khmer Pride backend running on http://localhost:${PORT}`);
